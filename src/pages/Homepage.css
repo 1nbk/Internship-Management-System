@@ -1,0 +1,395 @@
+.bg-decoration {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.2;
+}
+
+.blob-1 {
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, rgba(5, 150, 105, 0.08) 0%, rgba(5, 150, 105, 0) 70%);
+    top: -20vw;
+    left: -10vw;
+    animation: float 20s infinite alternate;
+}
+
+.blob-2 {
+    width: 40vw;
+    height: 40vw;
+    background: radial-gradient(circle, rgba(30, 41, 59, 0.05) 0%, rgba(30, 41, 59, 0) 70%);
+    bottom: -10vw;
+    right: -5vw;
+    animation: float 25s infinite alternate-reverse;
+}
+
+@keyframes float {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(40px, 40px);
+    }
+}
+
+.homepage {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* Navbar */
+.navbar {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    /* Seamless integration */
+    position: absolute;
+    /* Moves with the scroll initially */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.4s ease, opacity 0.4s ease, background 0.3s ease;
+}
+
+.navbar.sticky {
+    position: fixed;
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+}
+
+.navbar .container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-link {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    transition: var(--transition);
+}
+
+.nav-link:hover {
+    color: var(--success);
+}
+
+/* Hero & Background Image */
+.hero {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url('/assets/hero-bg.jpg') no-repeat 70% center / cover;
+    /* Focused on the subject */
+    background-attachment: fixed;
+    /* Parallax effect for "syncing" feel */
+    position: relative;
+    overflow: hidden;
+}
+
+.navbar.hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom,
+            rgba(15, 23, 42, 0.6) 0%,
+            rgba(15, 23, 42, 0.3) 60%,
+            #0f172a 100%);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 1000px;
+    padding: 2rem;
+}
+
+.hero-title {
+    font-size: 6rem;
+    font-weight: 900;
+    color: white;
+    margin-bottom: 1.5rem;
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+}
+
+.hero-title span {
+    color: var(--success);
+    background: linear-gradient(to right, #10b981, #34d399);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.75rem;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 800px;
+    margin: 0 auto 3rem;
+    line-height: 1.3;
+}
+
+.hero-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+/* Roles Grid - Ultra-Premium Bento UI */
+.roles-section {
+    padding: 160px 0 240px;
+    background: #0f172a;
+    position: relative;
+    z-index: 3;
+    margin-top: 0;
+    border-radius: 0;
+    overflow: hidden;
+}
+
+/* Dynamic Mesh Background */
+.roles-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+        radial-gradient(at 50% 0%, rgba(14, 165, 233, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.1) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(15, 23, 42, 1) 0px, transparent 100%);
+    z-index: 0;
+    animation: meshFlow 20s ease infinite alternate;
+}
+
+@keyframes meshFlow {
+    0% {
+        transform: scale(1) translate(0, 0);
+    }
+
+    50% {
+        transform: scale(1.1) translate(-2%, 2%);
+    }
+
+    100% {
+        transform: scale(1) translate(2%, -2%);
+    }
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 6rem;
+    position: relative;
+    z-index: 5;
+    /* Ensure it's above the mesh */
+}
+
+.discovery-main-title {
+    font-size: 4.5rem;
+    font-weight: 900;
+    color: #ffffff !important;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+}
+
+.discovery-main-subtitle {
+    font-size: 1.5rem;
+    color: #ffffff !important;
+    opacity: 0.9;
+    max-width: 800px;
+    margin: 0 auto;
+    font-weight: 400;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Path Selection Grid */
+.path-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    padding-bottom: 2rem;
+}
+
+.path-card {
+    background: rgba(30, 41, 59, 0.3);
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 50px;
+    padding: 4rem 3rem;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    perspective: 1000px;
+}
+
+/* Holographic Reflection Effect */
+.path-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.path-card:hover::before {
+    opacity: 1;
+}
+
+.path-card:hover {
+    transform: translateY(-20px) scale(1.02);
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow:
+        0 40px 120px -20px rgba(0, 0, 0, 0.8),
+        0 0 50px rgba(255, 255, 255, 0.05);
+    /* Silver-Chrome Glow */
+}
+
+.path-icon-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+    color: #ffffff;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    z-index: 1;
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+.path-card:hover .path-icon-container {
+    transform: scale(1.1) rotate(10deg);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.path-header {
+    margin-bottom: 2.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.path-question {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.path-card h3 {
+    font-size: 2.75rem;
+    font-weight: 900;
+    color: white;
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+.path-card p {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.125rem;
+    margin-bottom: 3.5rem;
+    line-height: 1.6;
+    flex-grow: 1;
+    position: relative;
+    z-index: 1;
+}
+
+.path-btn {
+    width: 100%;
+    height: 60px;
+    font-size: 1.125rem;
+    font-weight: 700;
+    border-radius: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+@media (max-width: 1024px) {
+    .path-selection-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+/* Footer */
+.footer {
+    padding: 4rem 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-muted);
+    background-color: white;
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 3rem;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        padding: 0 2rem;
+    }
+
+    .roles-section {
+        padding: 60px 0;
+        margin-top: -30px;
+    }
+}
+
+.admin-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
