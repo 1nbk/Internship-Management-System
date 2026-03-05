@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { FileText, Send, Building2, Calendar, MessageSquare, CheckCircle2 } from 'lucide-react';
 import Button from '../components/Button';
+import { useAuth } from '../context/AuthContext';
 import './Dashboards.css';
 
 const LetterRequest = () => {
+    const { user } = useAuth();
     const [submitted, setSubmitted] = useState(false);
+    const [currentRequest, setCurrentRequest] = useState(null);
     const [formData, setFormData] = useState({
         reason: '',
         company: '',
@@ -12,9 +15,30 @@ const LetterRequest = () => {
         notes: ''
     });
 
+    React.useEffect(() => {
+        const savedRequests = JSON.parse(localStorage.getItem('letter_requests') || '[]');
+        const myRequest = savedRequests.find(r => r.studentId === user?.id);
+        if (myRequest) {
+            setCurrentRequest(myRequest);
+            setSubmitted(true);
+        }
+    }, [user?.id]);
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        // In a real app, this would send data to the backend
+        const newRequest = {
+            id: Date.now(),
+            studentId: user?.id,
+            studentName: user?.name,
+            ...formData,
+            status: 'pending',
+            dateSubmitted: new Date().toLocaleDateString()
+        };
+
+        const savedRequests = JSON.parse(localStorage.getItem('letter_requests') || '[]');
+        localStorage.setItem('letter_requests', JSON.stringify([...savedRequests, newRequest]));
+
+        setCurrentRequest(newRequest);
         setSubmitted(true);
     };
 
@@ -23,23 +47,29 @@ const LetterRequest = () => {
             <div className="dashboard-view fade-in">
                 <div className="success-card">
                     <CheckCircle2 size={64} className="text-emerald-500" />
-                    <h2>Request Submitted!</h2>
-                    <p>Your internship letter request has been sent to the administration. We will review it and notify your supervisor shortly.</p>
+                    <h2>Request {currentRequest?.status === 'pending' ? 'Received' : 'Updated'}!</h2>
+                    <p>Your internship letter request for <strong>{currentRequest?.company}</strong> is currently <strong>{currentRequest?.status}</strong>.</p>
                     <div className="status-timeline">
-                        <div className="timeline-step active">
+                        <div className={`timeline-step ${currentRequest?.status ? 'active' : ''}`}>
                             <span className="step-dot"></span>
                             <span className="step-label">Request Received</span>
                         </div>
-                        <div className="timeline-step">
+                        <div className={`timeline-step ${['reviewing', 'approved', 'issued'].includes(currentRequest?.status) ? 'active' : ''}`}>
                             <span className="step-dot"></span>
                             <span className="step-label">Admin Review</span>
                         </div>
-                        <div className="timeline-step">
+                        <div className={`timeline-step ${currentRequest?.status === 'issued' ? 'active' : ''}`}>
                             <span className="step-dot"></span>
                             <span className="step-label">Letter Issued</span>
                         </div>
                     </div>
-                    <Button variant="secondary" onClick={() => setSubmitted(false)}>Request Another</Button>
+                    <Button variant="secondary" onClick={() => {
+                        const savedRequests = JSON.parse(localStorage.getItem('letter_requests') || '[]');
+                        const filtered = savedRequests.filter(r => r.studentId !== user?.id);
+                        localStorage.setItem('letter_requests', JSON.stringify(filtered));
+                        setSubmitted(false);
+                        setCurrentRequest(null);
+                    }}>Cancel & Start New</Button>
                 </div>
             </div>
         );

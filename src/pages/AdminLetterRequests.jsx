@@ -6,25 +6,28 @@ import './Dashboards.css';
 const AdminLetterRequests = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRequest, setSelectedRequest] = useState(null);
-    const [requests, setRequests] = useState([
-        { id: 1, student: 'Alice Johnson', company: 'TechNova Solutions', supervisor: 'Dr. Robert Smith', date: '2024-03-01', status: 'pending', reason: 'New Placement', notes: 'Please send as soon as possible.' },
-        { id: 2, student: 'Michael Chen', company: 'GreenEnergy Corp', supervisor: 'Sarah Wilson', date: '2024-03-02', status: 'pending', reason: 'Extension', notes: 'Need this for my visa renewal.' },
-        { id: 3, student: 'Emma Davis', company: 'Global Finance', supervisor: 'James Miller', date: '2024-02-28', status: 'finished', reason: 'New Placement', notes: '' },
-    ]);
+    const [requests, setRequests] = useState([]);
+
+    React.useEffect(() => {
+        const saved = JSON.parse(localStorage.getItem('letter_requests') || '[]');
+        setRequests(saved);
+    }, []);
 
     const handleApprove = (id) => {
-        setRequests(requests.map(req =>
-            req.id === id ? { ...req, status: 'finished' } : req
-        ));
+        const updated = requests.map(req =>
+            req.id === id ? { ...req, status: 'issued' } : req
+        );
+        setRequests(updated);
+        localStorage.setItem('letter_requests', JSON.stringify(updated));
         setSelectedRequest(null);
-        // Mock notification logic
-        alert('Letter approved and sent to student! Supervisor notified.');
     };
 
     const getStatusStyle = (status) => {
         switch (status) {
             case 'pending': return 'badge warning';
-            case 'finished': return 'badge success';
+            case 'reviewing': return 'badge info';
+            case 'approved':
+            case 'issued': return 'badge success';
             default: return 'badge';
         }
     };
@@ -70,46 +73,56 @@ const AdminLetterRequests = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {requests.map((r) => (
-                                <tr key={r.id}>
-                                    <td>
-                                        <div className="user-cell">
-                                            <div className="avatar-sm">{r.student.charAt(0)}</div>
-                                            <span>{r.student}</span>
-                                        </div>
-                                    </td>
-                                    <td>{r.reason}</td>
-                                    <td>
-                                        <div className="company-cell">
-                                            <Building2 size={16} />
-                                            <span>{r.company}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="date-cell">
-                                            <Calendar size={16} />
-                                            <span>{r.date}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={getStatusStyle(r.status)}>
-                                            {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="table-actions">
-                                            <button
-                                                className="btn-icon-text"
-                                                onClick={() => setSelectedRequest(r)}
-                                                disabled={r.status === 'finished'}
-                                            >
-                                                <ExternalLink size={16} />
-                                                <span>Review</span>
-                                            </button>
+                            {requests.length > 0 ? (
+                                requests.map((r) => (
+                                    <tr key={r.id}>
+                                        <td>
+                                            <div className="user-cell">
+                                                <div className="avatar-sm">{r.studentName?.charAt(0) || 'S'}</div>
+                                                <span>{r.studentName || 'Unknown'}</span>
+                                            </div>
+                                        </td>
+                                        <td>{r.reason}</td>
+                                        <td>
+                                            <div className="company-cell">
+                                                <Building2 size={16} />
+                                                <span>{r.company}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="date-cell">
+                                                <Calendar size={16} />
+                                                <span>{r.date}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={getStatusStyle(r.status)}>
+                                                {r.status.charAt(0).toUpperCase() + r.status.slice(1)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className="table-actions">
+                                                <button
+                                                    className="btn-icon-text"
+                                                    onClick={() => setSelectedRequest(r)}
+                                                    disabled={r.status === 'issued'}
+                                                >
+                                                    <ExternalLink size={16} />
+                                                    <span>Review</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="6" className="empty-table-cell">
+                                        <div className="empty-state-simple">
+                                            No pending letter requests.
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>

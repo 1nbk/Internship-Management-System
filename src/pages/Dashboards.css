@@ -1,3 +1,16 @@
+.empty-table-cell {
+    padding: 3rem !important;
+    text-align: center;
+}
+
+.empty-state-simple {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.9375rem;
+}
+
 .dashboard-view {
     display: flex;
     flex-direction: column;
@@ -546,4 +559,320 @@ td {
 
 .close-btn:hover {
     color: var(--text-main);
+}
+
+/* New Admin Features Styles */
+.mini-stat-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.mini-stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.mini-stat .label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.mini-stat .value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+/* User Management Extras */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    outline: none;
+    font-family: inherit;
+}
+
+/* Placement Details Grid */
+.modal-content.large {
+    max-width: 800px;
+}
+
+.placement-details-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2.5rem;
+}
+
+.info-section label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+}
+
+.info-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: var(--secondary-light);
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+}
+
+.avatar-lg {
+    width: 60px;
+    height: 60px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.info-meta h4 {
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.info-meta span {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.feedback-text {
+    font-style: italic;
+    color: var(--text-main);
+    line-height: 1.7;
+    background: #fdfdfd;
+    padding: 1.5rem;
+    border-left: 4px solid var(--primary);
+    border-radius: 4px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+}
+
+.detail-item:hover {
+    background: var(--secondary-light);
+}
+
+.detail-item label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.detail-item span {
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+.status-select {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Charts Polish */
+.mock-pie-chart-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+.legend-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.legend-meta .val {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.bar-tooltip {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--secondary);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    opacity: 0;
+    transition: var(--transition);
+    pointer-events: none;
+}
+
+.bar:hover .bar-tooltip {
+    opacity: 1;
+}
+
+/* Student Dashboard Specifics */
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.quick-action-card {
+    background: var(--bg-main);
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid transparent;
+}
+
+.quick-action-card:hover {
+    background: white;
+    border-color: var(--primary-light);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.quick-action-card .action-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.quick-action-card span {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-main);
+    text-align: center;
+}
+
+.premium-progress-ring {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-ring-text {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.progress-ring-text .percent {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1;
+}
+
+.progress-ring-text .label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+}
+
+.skills-list-premium {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.skill-tag-premium {
+    background: white;
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+
+.skill-tag-premium:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+.w-full {
+    width: 100%;
+}
+
+.mt-1 {
+    margin-top: 1.5rem;
+}
+
+.card-header-sub h3,
+.card-header-sub h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.icon-wrapper-mb {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+    color: var(--text-muted);
+    opacity: 0.5;
 }

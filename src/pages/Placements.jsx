@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { Search, Filter, ExternalLink, MoreVertical, Building2, User, Calendar, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { Search, Filter, ExternalLink, MoreVertical, Building2, User, Calendar, CheckCircle2, Clock, AlertCircle, X, Shield, FileText } from 'lucide-react';
+import Button from '../components/Button';
 import './Dashboards.css';
 
 const Placements = () => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedPlacement, setSelectedPlacement] = useState(null);
 
-    const placements = [
-        { id: 1, student: 'Alice Johnson', company: 'TechNova Solutions', supervisor: 'Dr. Robert Smith', startDate: '2024-01-15', status: 'active' },
-        { id: 2, student: 'Michael Chen', company: 'GreenEnergy Corp', supervisor: 'Sarah Wilson', startDate: '2024-02-01', status: 'pending' },
-        { id: 3, student: 'Emma Davis', company: 'Global Finance', supervisor: 'James Miller', startDate: '2023-11-20', status: 'completed' },
-        { id: 4, student: 'David Wilson', company: 'HealthTech Systems', supervisor: 'Dr. Maria Garcia', startDate: '2024-01-10', status: 'active' },
-        { id: 5, student: 'Sophia Lee', company: 'Creative Designs', supervisor: 'Alex Turney', startDate: '2024-02-15', status: 'pending' },
-    ];
+    const [placements, setPlacements] = useState([]);
+
+    const handleUpdateStatus = (id, newStatus) => {
+        setPlacements(placements.map(p => p.id === id ? { ...p, status: newStatus } : p));
+        if (selectedPlacement && selectedPlacement.id === id) {
+            setSelectedPlacement({ ...selectedPlacement, status: newStatus });
+        }
+    };
 
     const getStatusStyle = (status) => {
         switch (status) {
@@ -30,6 +33,12 @@ const Placements = () => {
             default: return null;
         }
     };
+
+    const filteredPlacements = placements.filter(p =>
+        p.student.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.supervisor.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="dashboard-view fade-in">
@@ -70,54 +79,150 @@ const Placements = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {placements.map((p) => (
-                                <tr key={p.id}>
-                                    <td>
-                                        <div className="user-cell">
-                                            <div className="avatar-sm">{p.student.charAt(0)}</div>
-                                            <span>{p.student}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="company-cell">
-                                            <Building2 size={16} />
-                                            <span>{p.company}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="supervisor-cell">
-                                            <User size={16} />
-                                            <span>{p.supervisor}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="date-cell">
-                                            <Calendar size={16} />
-                                            <span>{p.startDate}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={getStatusStyle(p.status)}>
-                                            {getStatusIcon(p.status)}
-                                            {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="table-actions">
-                                            <button className="icon-btn-sm" title="View Details">
-                                                <ExternalLink size={16} />
-                                            </button>
-                                            <button className="icon-btn-sm">
-                                                <MoreVertical size={16} />
-                                            </button>
+                            {filteredPlacements.length > 0 ? (
+                                filteredPlacements.map((p) => (
+                                    <tr key={p.id}>
+                                        <td>
+                                            <div className="user-cell">
+                                                <div className="avatar-sm">{p.student.charAt(0)}</div>
+                                                <span>{p.student}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="company-cell">
+                                                <Building2 size={16} />
+                                                <span>{p.company}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="supervisor-cell">
+                                                <User size={16} />
+                                                <span>{p.supervisor}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="date-cell">
+                                                <Calendar size={16} />
+                                                <span>{p.startDate}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={getStatusStyle(p.status)}>
+                                                {getStatusIcon(p.status)}
+                                                {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className="table-actions">
+                                                <button
+                                                    className="icon-btn-sm"
+                                                    title="View Details"
+                                                    onClick={() => setSelectedPlacement(p)}
+                                                >
+                                                    <ExternalLink size={16} />
+                                                </button>
+                                                <button className="icon-btn-sm">
+                                                    <MoreVertical size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="6" className="empty-table-cell">
+                                        <div className="empty-state-simple">
+                                            No placements found.
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            {/* Placement Detail Modal */}
+            {selectedPlacement && (
+                <div className="modal-overlay">
+                    <div className="modal-content large">
+                        <div className="modal-header">
+                            <h3>Placement Details</h3>
+                            <button className="close-btn" onClick={() => setSelectedPlacement(null)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="placement-details-grid">
+                                <div className="detail-main">
+                                    <div className="info-section">
+                                        <label>Student Information</label>
+                                        <div className="info-card">
+                                            <div className="avatar-lg">{selectedPlacement.student.charAt(0)}</div>
+                                            <div className="info-meta">
+                                                <h4>{selectedPlacement.student}</h4>
+                                                <span>{selectedPlacement.department}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="info-section">
+                                        <label>Latest Supervisor Feedback</label>
+                                        <p className="feedback-text">"{selectedPlacement.feedback}"</p>
+                                    </div>
+                                </div>
+
+                                <div className="detail-sidebar">
+                                    <div className="detail-item">
+                                        <Building2 size={18} />
+                                        <div>
+                                            <label>Company</label>
+                                            <span>{selectedPlacement.company}</span>
+                                        </div>
+                                    </div>
+                                    <div className="detail-item">
+                                        <User size={18} />
+                                        <div>
+                                            <label>Supervisor</label>
+                                            <span>{selectedPlacement.supervisor}</span>
+                                        </div>
+                                    </div>
+                                    <div className="detail-item">
+                                        <Calendar size={18} />
+                                        <div>
+                                            <label>Start Date</label>
+                                            <span>{selectedPlacement.startDate}</span>
+                                        </div>
+                                    </div>
+                                    <div className="detail-item">
+                                        <Shield size={18} />
+                                        <div>
+                                            <label>Current Status</label>
+                                            <span className={getStatusStyle(selectedPlacement.status)}>
+                                                {selectedPlacement.status.toUpperCase()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <div className="footer-actions-left">
+                                <select
+                                    className="status-select"
+                                    value={selectedPlacement.status}
+                                    onChange={(e) => handleUpdateStatus(selectedPlacement.id, e.target.value)}
+                                >
+                                    <option value="pending">Pending</option>
+                                    <option value="active">Active</option>
+                                    <option value="completed">Completed</option>
+                                </select>
+                            </div>
+                            <Button onClick={() => setSelectedPlacement(null)}>Close</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

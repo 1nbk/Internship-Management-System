@@ -16,6 +16,7 @@ import Reports from './pages/Reports';
 import UsersManagement from './pages/UsersManagement';
 import LetterRequest from './pages/LetterRequest';
 import AdminLetterRequests from './pages/AdminLetterRequests';
+import Opportunities from './pages/Opportunities';
 
 // Helper component for role-based redirection
 const RoleRedirect = () => {
@@ -53,6 +54,7 @@ function App() {
             {/* Student Routes */}
             <Route element={<ProtectedRoute allowedRoles={['student']} />}>
               <Route path="student" element={<StudentDashboard />} />
+              <Route path="opportunities" element={<Opportunities />} />
               <Route path="letter-request" element={<LetterRequest />} />
               <Route path="logbook" element={<Logbook />} />
               <Route path="documents" element={<Documents />} />

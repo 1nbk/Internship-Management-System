@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Download, Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import Button from '../components/Button';
 import './Documents.css';
@@ -10,10 +10,7 @@ const Documents = () => {
         { id: 3, name: 'Weekly Progress Template', type: 'XLSX', size: '42 KB' },
     ];
 
-    const uploads = [
-        { id: 1, name: 'Signed Offer Letter.pdf', date: 'Oct 12, 2025', status: 'verified' },
-        { id: 2, name: 'ID Copy.jpg', date: 'Oct 10, 2025', status: 'verified' },
-    ];
+    const [uploads, setUploads] = useState([]);
 
     return (
         <div className="documents-container">
@@ -51,19 +48,25 @@ const Documents = () => {
                         </Button>
                     </div>
                     <div className="upload-list">
-                        {uploads.map((file) => (
-                            <div key={file.id} className="upload-item">
-                                <FileText size={20} className="file-icon" />
-                                <div className="file-details">
-                                    <span className="file-name">{file.name}</span>
-                                    <span className="file-date">{file.date}</span>
+                        {uploads.length > 0 ? (
+                            uploads.map((file) => (
+                                <div key={file.id} className="upload-item">
+                                    <FileText size={20} className="file-icon" />
+                                    <div className="file-details">
+                                        <span className="file-name">{file.name}</span>
+                                        <span className="file-date">{file.date}</span>
+                                    </div>
+                                    <div className={`file-status ${file.status}`}>
+                                        <CheckCircle size={16} />
+                                        <span>Verified</span>
+                                    </div>
                                 </div>
-                                <div className={`file-status ${file.status}`}>
-                                    <CheckCircle size={16} />
-                                    <span>Verified</span>
-                                </div>
+                            ))
+                        ) : (
+                            <div className="empty-state-simple">
+                                <p>No documents uploaded yet.</p>
                             </div>
-                        ))}
+                        )}
                         <div className="upload-placeholder">
                             <div className="upload-dropzone">
                                 <Upload size={32} />

@@ -4,12 +4,9 @@ import Button from '../components/Button';
 import './Logbook.css';
 
 const Logbook = () => {
-    const [activeWeek, setActiveWeek] = useState(7);
+    const [activeWeek, setActiveWeek] = useState(1);
 
-    const mockLogs = [
-        { week: 6, status: 'approved', content: 'Completed the UI design for the new portal.', feedback: 'Great job on the consistent colors!' },
-        { week: 5, status: 'approved', content: 'Researched internship management systems.', feedback: 'Insightful analysis.' },
-    ];
+    const [mockLogs, setMockLogs] = useState([]);
 
     return (
         <div className="logbook-container">
@@ -48,24 +45,33 @@ const Logbook = () => {
                 <div className="logbook-history">
                     <h3>Submission History</h3>
                     <div className="history-list">
-                        {mockLogs.map((log) => (
-                            <div key={log.week} className="history-item">
-                                <div className="history-top">
-                                    <span className="week-label">Week {log.week}</span>
-                                    <span className={`status-badge ${log.status}`}>
-                                        {log.status === 'approved' ? <CheckCircle size={14} /> : <XCircle size={14} />}
-                                        {log.status}
-                                    </span>
-                                </div>
-                                <p className="log-snippet">{log.content}</p>
-                                {log.feedback && (
-                                    <div className="feedback-box">
-                                        <strong>Supervisor Feedback:</strong>
-                                        <p>{log.feedback}</p>
+                        {mockLogs.length > 0 ? (
+                            mockLogs.map((log) => (
+                                <div key={log.week} className="history-item">
+                                    <div className="history-top">
+                                        <span className="week-label">Week {log.week}</span>
+                                        <span className={`status-badge ${log.status}`}>
+                                            {log.status === 'approved' ? <CheckCircle size={14} /> : <XCircle size={14} />}
+                                            {log.status}
+                                        </span>
                                     </div>
-                                )}
+                                    <p className="log-snippet">{log.content}</p>
+                                    {log.feedback && (
+                                        <div className="feedback-box">
+                                            <strong>Supervisor Feedback:</strong>
+                                            <p>{log.feedback}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="empty-state-simple">
+                                <div className="icon-wrapper-mb">
+                                    <Send size={32} />
+                                </div>
+                                <p>No submissions yet. Start your logbook for Week 1!</p>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
             </div>
