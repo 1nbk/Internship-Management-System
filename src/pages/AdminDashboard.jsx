@@ -1,26 +1,51 @@
-import React, { useState } from 'react';
-import { Users, UserCheck, Clock, FileCheck, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Users, UserCheck, Clock, FileCheck, ArrowRight, Mail, Shield, Briefcase, TrendingUp, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './Dashboards.css';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const [letterRequests, setLetterRequests] = useState([]);
+    const [users, setUsers] = useState([]);
+
+    useEffect(() => {
+        const savedLetters = JSON.parse(localStorage.getItem('letter_requests') || '[]');
+        const savedUsers = JSON.parse(localStorage.getItem('ims_users') || '[]');
+        setLetterRequests(savedLetters);
+        setUsers(savedUsers);
+    }, []);
+
+    const totalStudents = users.filter(u => u.role === 'student').length;
+    const activeSupervisors = users.filter(u => u.role === 'supervisor' && u.status === 'active').length;
+    const pendingLetters = letterRequests.filter(r => r.status === 'pending').length;
+    const assignedStudents = users.filter(u => u.role === 'student' && u.supervisorName).length;
 
     const stats = [
-        { label: 'Total Students', value: '0', icon: <Users size={24} />, color: 'blue' },
-        { label: 'Students Placed', value: '0', icon: <UserCheck size={24} />, color: 'green' },
-        { label: 'Pending Approvals', value: '0', icon: <Clock size={24} />, color: 'orange' },
-        { label: 'Active Supervisors', value: '0', icon: <FileCheck size={24} />, color: 'purple' },
+        { label: 'Total Students', value: String(totalStudents), icon: <Users size={24} />, color: 'blue' },
+        { label: 'Active Supervisors', value: String(activeSupervisors), icon: <UserCheck size={24} />, color: 'green' },
+        { label: 'Pending Letters', value: String(pendingLetters), icon: <Clock size={24} />, color: 'orange' },
+        { label: 'Students Assigned', value: String(assignedStudents), icon: <FileCheck size={24} />, color: 'purple' },
     ];
 
-    const [recentPlacements, setRecentPlacements] = useState([]);
+    const quickActions = [
+        { label: 'Review Letters', desc: 'Approve pending requests', icon: <Mail size={22} />, path: '/dashboard/admin/letters', accent: '#f59e0b' },
+        { label: 'User Management', desc: 'Manage roles & access', icon: <Shield size={22} />, path: '/dashboard/users', accent: '#8b5cf6' },
+        { label: 'View Placements', desc: 'Track active internships', icon: <Briefcase size={22} />, path: '/dashboard/placements', accent: '#10b981' },
+        { label: 'Global Reports', desc: 'Analytics & exports', icon: <TrendingUp size={22} />, path: '/dashboard/reports', accent: '#3b82f6' },
+    ];
 
     return (
         <div className="dashboard-view fade-in">
-            <div className="view-header">
-                <div>
-                    <h1>Admin Console</h1>
-                    <p>System-wide monitoring and administrative control center.</p>
+            {/* Welcome Banner */}
+            <div className="admin-welcome-banner">
+                <div className="welcome-text">
+                    <h1>Welcome back, {user?.name || 'Admin'} 👋</h1>
+                    <p>Here's an overview of your internship management system.</p>
+                </div>
+                <div className="welcome-accent">
+                    <Activity size={80} strokeWidth={1} />
                 </div>
             </div>
 
@@ -39,33 +64,39 @@ const AdminDashboard = () => {
             </div>
 
             <div className="dashboard-grid">
+                {/* Recent Letter Requests */}
                 <div className="data-card large">
                     <div className="card-header">
-                        <h3>Recent Placements</h3>
-                        <button className="text-btn" onClick={() => navigate('/dashboard/placements')}>
+                        <h3>Recent Letter Requests</h3>
+                        <button className="text-btn" onClick={() => navigate('/dashboard/admin/letters')}>
                             View All <ArrowRight size={16} />
                         </button>
                     </div>
                     <div className="table-responsive">
-                        {recentPlacements.length > 0 ? (
+                        {letterRequests.length > 0 ? (
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Student Name</th>
+                                        <th>Student</th>
                                         <th>Company</th>
-                                        <th>Supervisor</th>
+                                        <th>Date</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {recentPlacements.map((p) => (
-                                        <tr key={p.id}>
-                                            <td>{p.student}</td>
-                                            <td>{p.company}</td>
-                                            <td>{p.supervisor}</td>
+                                    {letterRequests.slice(0, 5).map((r) => (
+                                        <tr key={r.id}>
                                             <td>
-                                                <span className={`badge ${p.status === 'Active' ? 'success' : p.status === 'Pending' ? 'warning' : 'info'}`}>
-                                                    {p.status}
+                                                <div className="user-cell">
+                                                    <div className="avatar-sm">{r.studentName?.charAt(0) || 'S'}</div>
+                                                    <span>{r.studentName || 'Student'}</span>
+                                                </div>
+                                            </td>
+                                            <td>{r.company}</td>
+                                            <td>{r.dateSubmitted}</td>
+                                            <td>
+                                                <span className={`badge ${r.status === 'pending' ? 'warning' : r.status === 'issued' ? 'success' : 'info'}`}>
+                                                    {r.status?.charAt(0).toUpperCase() + r.status?.slice(1)}
                                                 </span>
                                             </td>
                                         </tr>
@@ -74,29 +105,34 @@ const AdminDashboard = () => {
                             </table>
                         ) : (
                             <div className="empty-state-simple">
-                                <p>No recent activity found.</p>
+                                <p>No letter requests yet.</p>
                             </div>
                         )}
                     </div>
                 </div>
 
+                {/* Quick Actions */}
                 <div className="data-card small">
                     <div className="card-header">
                         <h3>Quick Actions</h3>
                     </div>
-                    <div className="actions-list">
-                        <button className="action-item" onClick={() => navigate('/dashboard/users')}>
-                            Approve New Supervisor
-                        </button>
-                        <button className="action-item" onClick={() => navigate('/dashboard/reports')}>
-                            Generate Monthly Report
-                        </button>
-                        <button className="action-item" onClick={() => navigate('/dashboard/admin/letters')}>
-                            Review Letter Requests
-                        </button>
-                        <button className="action-item" onClick={() => navigate('/dashboard/placements')}>
-                            Manage All Placements
-                        </button>
+                    <div className="admin-quick-actions">
+                        {quickActions.map((action, idx) => (
+                            <button
+                                key={idx}
+                                className="admin-action-card"
+                                onClick={() => navigate(action.path)}
+                            >
+                                <div className="action-icon-wrap" style={{ background: `${action.accent}15`, color: action.accent }}>
+                                    {action.icon}
+                                </div>
+                                <div className="action-text">
+                                    <span className="action-label">{action.label}</span>
+                                    <span className="action-desc">{action.desc}</span>
+                                </div>
+                                <ArrowRight size={16} className="action-arrow" />
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>

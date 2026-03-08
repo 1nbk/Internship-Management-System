@@ -1,16 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, ExternalLink, MoreVertical, Building2, User, Calendar, CheckCircle2, Clock, AlertCircle, X, Shield, FileText } from 'lucide-react';
 import Button from '../components/Button';
 import './Dashboards.css';
 
+const SEED_PLACEMENTS = [
+    { id: 1, student: 'Alice Student', company: 'TechNova Solutions', supervisor: 'Dr. Sarah Smith', startDate: '2026-02-15', status: 'active', department: 'CS', feedback: 'Excellent progress on the frontend module. Shows strong initiative.' },
+    { id: 2, student: 'Bob Kamau', company: 'DataSync Labs', supervisor: 'Prof. James Bond', startDate: '2026-01-20', status: 'active', department: 'IT', feedback: 'Good analytical skills. Needs to improve time management.' },
+    { id: 3, student: 'Claire Wanjiku', company: 'Green Energy Corp', supervisor: 'Dr. Sarah Smith', startDate: '2026-03-01', status: 'pending', department: 'ENG', feedback: 'Awaiting initial supervisor review.' },
+    { id: 4, student: 'David Omondi', company: 'FinTech Global', supervisor: 'Prof. James Bond', startDate: '2025-09-10', status: 'completed', department: 'CS', feedback: 'Successfully completed all deliverables. Recommend for full-time hiring.' },
+    { id: 5, student: 'Eve Nyambura', company: 'CloudBase Inc.', supervisor: 'Dr. Sarah Smith', startDate: '2026-02-28', status: 'active', department: 'CS', feedback: 'Adapting well to Agile workflows. Strong team player.' },
+];
+
 const Placements = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedPlacement, setSelectedPlacement] = useState(null);
-
     const [placements, setPlacements] = useState([]);
 
+    useEffect(() => {
+        const saved = JSON.parse(localStorage.getItem('ims_placements') || '[]');
+        if (saved.length === 0) {
+            localStorage.setItem('ims_placements', JSON.stringify(SEED_PLACEMENTS));
+            setPlacements(SEED_PLACEMENTS);
+        } else {
+            setPlacements(saved);
+        }
+    }, []);
+
     const handleUpdateStatus = (id, newStatus) => {
-        setPlacements(placements.map(p => p.id === id ? { ...p, status: newStatus } : p));
+        const updated = placements.map(p => p.id === id ? { ...p, status: newStatus } : p);
+        setPlacements(updated);
+        localStorage.setItem('ims_placements', JSON.stringify(updated));
         if (selectedPlacement && selectedPlacement.id === id) {
             setSelectedPlacement({ ...selectedPlacement, status: newStatus });
         }
@@ -40,6 +59,10 @@ const Placements = () => {
         p.supervisor.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const activeCount = placements.filter(p => p.status === 'active').length;
+    const pendingCount = placements.filter(p => p.status === 'pending').length;
+    const completedCount = placements.filter(p => p.status === 'completed').length;
+
     return (
         <div className="dashboard-view fade-in">
             <div className="view-header">
@@ -47,10 +70,11 @@ const Placements = () => {
                     <h1>Placement Management</h1>
                     <p>Track and oversee all active student internships globally.</p>
                 </div>
-                <button className="btn btn-primary">
-                    <Filter size={18} />
-                    <span>Advanced Filter</span>
-                </button>
+                <div className="placement-header-stats">
+                    <div className="ph-stat"><span className="ph-val" style={{ color: '#10b981' }}>{activeCount}</span><span className="ph-label">Active</span></div>
+                    <div className="ph-stat"><span className="ph-val" style={{ color: '#f59e0b' }}>{pendingCount}</span><span className="ph-label">Pending</span></div>
+                    <div className="ph-stat"><span className="ph-val" style={{ color: '#3b82f6' }}>{completedCount}</span><span className="ph-label">Done</span></div>
+                </div>
             </div>
 
             <div className="data-card">

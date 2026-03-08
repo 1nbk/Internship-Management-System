@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate, NavLink, Outlet } from 'react-router-dom';
 import {
-    Layout, Users, FileText, Settings, LogOut, ChevronRight, Bell,
+    Users, LogOut, ChevronRight, Bell,
     Shield, Mail, Send, Activity, BarChart3, Briefcase, Server,
-    ClipboardList, FolderOpen, UserCircle
+    ClipboardList, FolderOpen, UserCircle, GraduationCap, Menu
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './DashboardLayout.css';
@@ -40,18 +40,24 @@ const DashboardLayout = () => {
     };
 
     const roleMenu = menuItems[user?.role || 'student'];
+    const roleLabel = user?.role === 'admin' ? 'ADMIN' : user?.role === 'supervisor' ? 'SUPERVISOR' : 'STUDENT';
 
     return (
         <div className="dashboard-container">
             {/* Sidebar */}
             <aside className="sidebar">
                 <div className="sidebar-logo">
-                    <Layout size={24} />
-                    <div className="logo-text">
-                        <span>IMS Portal</span>
-                        {user?.role === 'admin' && <span className="admin-tag">ADMIN</span>}
-                        {user?.role === 'supervisor' && <span className="role-tag-sub">SUPERVISOR</span>}
+                    <div className="logo-icon">
+                        <GraduationCap size={22} />
                     </div>
+                    <div className="logo-text">
+                        <span className="logo-title">IMS Portal</span>
+                        <span className={`role-badge ${user?.role}`}>{roleLabel}</span>
+                    </div>
+                </div>
+
+                <div className="sidebar-section-label">
+                    <span>NAVIGATION</span>
                 </div>
 
                 <nav className="sidebar-nav">
@@ -60,17 +66,25 @@ const DashboardLayout = () => {
                             key={item.path}
                             to={item.path}
                             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                            title={item.label}
                         >
-                            {item.icon}
-                            <span>{item.label}</span>
-                            <ChevronRight size={16} className="arrow" />
+                            <div className="nav-icon-wrap">{item.icon}</div>
+                            <span className="nav-label">{item.label}</span>
+                            <ChevronRight size={14} className="arrow" />
                         </NavLink>
                     ))}
                 </nav>
 
                 <div className="sidebar-footer">
-                    <button onClick={handleLogout} className="logout-btn">
-                        <LogOut size={20} />
+                    <div className="sidebar-user-mini">
+                        <div className="sidebar-avatar">{user?.name?.charAt(0) || 'U'}</div>
+                        <div className="sidebar-user-text">
+                            <span className="sidebar-user-name">{user?.name || 'User'}</span>
+                            <span className="sidebar-user-role">{user?.role}</span>
+                        </div>
+                    </div>
+                    <button onClick={handleLogout} className="logout-btn" title="Logout">
+                        <LogOut size={18} />
                         <span>Logout</span>
                     </button>
                 </div>
@@ -86,12 +100,11 @@ const DashboardLayout = () => {
                                     'Student Portal'}
                         </h2>
                         <p>Welcome back, {user?.name || 'User'}</p>
-                        <p>Here's what's happening today.</p>
                     </div>
                     <div className="header-actions">
                         <button className="icon-btn">
                             <Bell size={20} />
-                            <span className="badge"></span>
+                            <span className="notif-dot"></span>
                         </button>
                         <div className="user-profile">
                             <div className="avatar">{user?.name?.charAt(0) || 'U'}</div>

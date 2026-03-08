@@ -33,13 +33,15 @@ const UsersManagement = () => {
     const handleAddUser = (e) => {
         e.preventDefault();
         const user = {
-            id: users.length + 1,
+            id: Date.now(),
             ...newUser,
             status: 'active',
             date: new Date().toISOString().split('T')[0],
             dept: newUser.department || 'N/A'
         };
-        setUsers([user, ...users]);
+        const updated = [user, ...users];
+        setUsers(updated);
+        localStorage.setItem('ims_users', JSON.stringify(updated));
         setShowAddModal(false);
         setNewUser({ name: '', email: '', role: 'supervisor', department: '' });
     };
