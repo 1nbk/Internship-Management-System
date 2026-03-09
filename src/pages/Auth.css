@@ -1,26 +1,86 @@
+/* ===== Auth Pages (Login & Signup) ===== */
+
 .auth-page {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8)),
-        url('/assets/roles-bg.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
     padding: 2rem;
+    position: relative;
+    overflow: hidden;
 }
 
+/* Subtle animated background orbs */
+.auth-page::before,
+.auth-page::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.auth-page::before {
+    width: 500px;
+    height: 500px;
+    background: var(--primary);
+    top: -150px;
+    right: -100px;
+    animation: auth-float 8s ease-in-out infinite;
+}
+
+.auth-page::after {
+    width: 400px;
+    height: 400px;
+    background: #6366f1;
+    bottom: -100px;
+    left: -100px;
+    animation: auth-float 10s ease-in-out infinite reverse;
+}
+
+@keyframes auth-float {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    50% {
+        transform: translate(30px, -20px) scale(1.05);
+    }
+}
+
+/* Card */
 .auth-card {
-    background-color: white;
-    padding: 2.5rem;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-premium);
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(20px);
+    padding: 2.5rem 2.5rem 2rem;
+    border-radius: var(--radius-xl);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 20px 50px -12px rgba(0, 0, 0, 0.35);
     width: 100%;
-    max-width: 450px;
-    border: 1px solid var(--border);
+    max-width: 440px;
+    position: relative;
+    z-index: 1;
+    animation: auth-card-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@keyframes auth-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Header */
 .auth-header {
     text-align: center;
     margin-bottom: 2rem;
@@ -29,146 +89,232 @@
 .auth-logo {
     display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.6rem;
     color: var(--primary);
     font-weight: 700;
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.35rem;
+    margin-bottom: 1.25rem;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.auth-logo:hover {
+    opacity: 0.85;
 }
 
 .auth-header h1 {
-    font-size: 1.75rem;
+    font-size: 1.65rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    color: var(--text-main);
+    margin-bottom: 0.35rem;
+    letter-spacing: -0.02em;
 }
 
 .auth-header p {
     color: var(--text-muted);
+    font-size: 0.925rem;
 }
 
+/* Form */
 .auth-form {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.15rem;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 .form-group label {
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 0.82rem;
+    font-weight: 600;
     color: var(--text-main);
+    letter-spacing: 0.01em;
 }
 
+/* Input wrapper & icon — FIXED overlap */
 .input-wrapper {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-.input-icon {
+.input-wrapper .input-icon {
     position: absolute;
-    left: 1rem;
-    color: var(--text-muted);
+    left: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+    z-index: 2;
+    width: 16px;
+    height: 16px;
 }
 
-.input-wrapper input {
+.input-wrapper input[type="text"],
+.input-wrapper input[type="email"],
+.input-wrapper input[type="password"] {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
-    border: 1px solid var(--border);
+    padding: 0.7rem 1rem 0.7rem 2.75rem !important;
+    border: 1.5px solid var(--border);
     border-radius: var(--radius-md);
-    font-size: 1rem;
+    font-size: 0.925rem;
+    font-family: inherit;
+    color: var(--text-main);
+    background: var(--bg-main);
     outline: none;
     transition: var(--transition);
+    box-sizing: border-box;
+}
+
+.input-wrapper input::placeholder {
+    color: #94a3b8;
 }
 
 .input-wrapper input:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+    background: #fff;
 }
 
+/* Auth options row */
 .auth-options {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.875rem;
+    font-size: 0.82rem;
 }
 
 .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     cursor: pointer;
     color: var(--text-muted);
+    font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--primary);
+    cursor: pointer;
 }
 
 .forgot-password {
     color: var(--primary);
-    font-weight: 500;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
 }
 
+.forgot-password:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+/* Footer */
 .auth-footer {
-    margin-top: 2rem;
+    margin-top: 1.75rem;
     text-align: center;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
 }
 
 .auth-footer a {
     color: var(--primary);
     font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
 }
 
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Full-width button override */
 .w-full {
     width: 100%;
 }
 
-/* Role Selector */
+.auth-form .btn {
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+/* ===== Role Selector (Signup) ===== */
 .role-selector {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .role-selector p {
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-bottom: 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: var(--text-main);
 }
 
 .role-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
+    gap: 0.6rem;
 }
 
 .role-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    border: 1px solid var(--border);
+    gap: 0.35rem;
+    padding: 0.75rem 0.5rem;
+    border: 1.5px solid var(--border);
     border-radius: var(--radius-md);
-    background: white;
+    background: var(--bg-main);
     transition: var(--transition);
     color: var(--text-muted);
+    cursor: pointer;
+    font-family: inherit;
 }
 
 .role-btn:hover {
-    border-color: var(--primary-light);
-    background-color: var(--bg-main);
+    border-color: var(--primary);
+    background-color: #fff;
+    color: var(--text-main);
+    transform: translateY(-1px);
 }
 
 .role-btn.active {
     border-color: var(--primary);
     background-color: var(--primary-light);
     color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
 }
 
 .role-btn span {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+    .auth-page {
+        padding: 1rem;
+    }
+
+    .auth-card {
+        padding: 1.75rem 1.5rem 1.5rem;
+    }
+
+    .role-options {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+    }
 }
