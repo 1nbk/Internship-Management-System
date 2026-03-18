@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Send, Building2, Calendar, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { FileText, Send, Building2, Calendar, MessageSquare, CheckCircle2, Mail } from 'lucide-react';
 import Button from '../components/Button';
 import { useAuth } from '../context/AuthContext';
 import './Dashboards.css';
@@ -11,6 +11,7 @@ const LetterRequest = () => {
     const [formData, setFormData] = useState({
         reason: '',
         company: '',
+        email: '',
         startDate: '',
         notes: ''
     });
@@ -96,6 +97,17 @@ const LetterRequest = () => {
                                     required
                                     value={formData.company}
                                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="form-group-dash">
+                                <label><Mail size={16} /> Your Email Address</label>
+                                <input
+                                    type="email"
+                                    placeholder="e.g. student@university.edu"
+                                    required
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 />
                             </div>
 

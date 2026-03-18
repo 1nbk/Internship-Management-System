@@ -1280,6 +1280,236 @@ tbody tr:hover {
     opacity: 0.5;
 }
 
+/* ===== Opportunities / Find Internships Page ===== */
+.search-wrapper-premium {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+}
+
+.search-wrapper-premium .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.search-wrapper-premium input {
+    width: 100%;
+    padding: 0.65rem 1rem 0.65rem 2.75rem;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    color: var(--text-main);
+    background: white;
+    transition: var(--transition);
+}
+
+.search-wrapper-premium input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.search-wrapper-premium input::placeholder {
+    color: var(--text-muted);
+}
+
+.filters-bar-premium {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding-bottom: 0.5rem;
+}
+
+.filter-chip {
+    padding: 0.45rem 1.1rem;
+    border-radius: 20px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: white;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.filter-chip:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+.filter-chip.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+}
+
+.opportunities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.opp-card-premium {
+    background: white;
+    border-radius: var(--radius-xl, 16px);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.25s ease;
+    overflow: hidden;
+}
+
+.opp-card-premium:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+    border-color: transparent;
+}
+
+.opp-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.25rem 1.5rem 0;
+}
+
+.company-logo-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-light) 0%, #d1fae5 100%);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.opp-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.opp-status-badge {
+    padding: 0.25rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: #d1fae5;
+    color: #047857;
+    letter-spacing: 0.02em;
+}
+
+.opp-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #f59e0b;
+}
+
+.opp-card-body {
+    padding: 1rem 1.5rem 0.75rem;
+    flex: 1;
+}
+
+.opp-card-body h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    color: var(--text-main);
+}
+
+.company-name {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+}
+
+.opp-details-row {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.opp-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.opp-detail svg {
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.opp-card-footer {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem 1.25rem;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+}
+
+.opp-card-footer .w-full {
+    flex: 1;
+}
+
+.empty-state-full {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 4rem 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    background: white;
+    border-radius: var(--radius-xl, 16px);
+    border: 1px solid var(--border);
+}
+
+.empty-state-full svg {
+    opacity: 0.3;
+}
+
+.empty-state-full h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.empty-state-full p {
+    font-size: 0.9rem;
+    max-width: 360px;
+}
+
+@media (max-width: 768px) {
+    .opportunities-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .search-wrapper-premium {
+        max-width: 100%;
+    }
+}
+
+
 /* ===== Admin Dashboard Premium Styles ===== */
 
 .admin-welcome-banner {
@@ -1445,4 +1675,35 @@ tbody tr:hover {
 .btn-outline:hover {
     background: var(--primary);
     color: white;
+}
+
+/* ===== Toast Notification ===== */
+.toast-notification {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: #065f46;
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
+    animation: slideInToast 0.35s ease-out;
+    max-width: 440px;
+}
+
+@keyframes slideInToast {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
