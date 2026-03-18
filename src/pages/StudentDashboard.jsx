@@ -8,12 +8,27 @@ const StudentDashboard = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [letterRequests, setLetterRequests] = useState([]);
+    const [hasStarted, setHasStarted] = useState(false);
 
     useEffect(() => {
         const saved = JSON.parse(localStorage.getItem('letter_requests') || '[]');
         const myRequests = saved.filter(r => r.studentId === user?.id);
         setLetterRequests(myRequests);
+
+        const allUsers = JSON.parse(localStorage.getItem('ims_users') || '[]');
+        const me = allUsers.find(u => u.id === user?.id);
+        setHasStarted(me?.internshipStarted || false);
     }, [user?.id]);
+
+    const handleStartInternship = () => {
+        const allUsers = JSON.parse(localStorage.getItem('ims_users') || '[]');
+        const updatedUsers = allUsers.map(u => u.id === user?.id ? { ...u, internshipStarted: true } : u);
+        localStorage.setItem('ims_users', JSON.stringify(updatedUsers));
+        
+        const updatedUser = { ...user, internshipStarted: true };
+        localStorage.setItem('ims_user', JSON.stringify(updatedUser)); // Auth context relies on this
+        setHasStarted(true);
+    };
 
     const activeInternship = letterRequests.sort((a,b) => b.id - a.id).find(r => r.status === 'issued' || r.status === 'approved') || letterRequests[0];
 
@@ -49,10 +64,14 @@ const StudentDashboard = () => {
         }
     }
 
+    const allLogs = JSON.parse(localStorage.getItem('ims_logbooks') || '[]');
+    const myLogs = allLogs.filter(log => log.studentId === user?.id);
+    const approvedReports = myLogs.filter(log => log.status === 'approved').length;
+
     const stats = [
         { label: 'Weeks Completed', value: `${weeksCompleted}/${totalWeeks}`, icon: <Calendar size={24} />, color: 'blue' },
-        { label: 'Reports Approved', value: '0', icon: <CheckCircle2 size={24} />, color: 'green' },
-        { label: 'Submission Streak', value: '0 weeks', icon: <TrendingUp size={24} />, color: 'purple' },
+        { label: 'Reports Approved', value: String(approvedReports), icon: <CheckCircle2 size={24} />, color: 'green' },
+        { label: 'Submission Streak', value: `${myLogs.length > 0 ? myLogs.length : 0} weeks`, icon: <TrendingUp size={24} />, color: 'purple' },
         { label: 'Days Remaining', value: daysRemaining, icon: <Clock size={24} />, color: 'orange' },
     ];
 
@@ -88,10 +107,17 @@ const StudentDashboard = () => {
                             <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', margin: 0 }}>The admin has approved your request for <strong>{letterRequests.find(r => r.status === 'issued').company}</strong>.</p>
                         </div>
                     </div>
-                    <button className="btn" style={{ background: 'var(--success)', color: '#fff', border: 'none', padding: '0.6rem 1.25rem', borderRadius: '2rem', cursor: 'pointer', fontWeight: '500' }} onClick={() => navigate('/dashboard/documents')}>
-                        <FileText size={16} style={{ display: 'inline', marginRight: '0.4rem', verticalAlign: 'middle' }} />
-                        View Document
-                    </button>
+                    {hasStarted ? (
+                        <button className="btn" style={{ background: 'transparent', border: '1px solid var(--success)', color: 'var(--success)', padding: '0.6rem 1.25rem', borderRadius: '2rem', cursor: 'pointer', fontWeight: '500' }} onClick={() => navigate('/dashboard/documents')}>
+                            <FileText size={16} style={{ display: 'inline', marginRight: '0.4rem', verticalAlign: 'middle' }} />
+                            View Document
+                        </button>
+                    ) : (
+                        <button className="btn" style={{ background: 'var(--success)', color: '#fff', border: 'none', padding: '0.6rem 1.25rem', borderRadius: '2rem', cursor: 'pointer', fontWeight: '500', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)' }} onClick={handleStartInternship}>
+                            <Briefcase size={16} style={{ display: 'inline', marginRight: '0.4rem', verticalAlign: 'middle' }} />
+                            Start Internship
+                        </button>
+                    )}
                 </div>
             )}
 
@@ -201,9 +227,19 @@ const StudentDashboard = () => {
                             <h3>Core Skills Tracked</h3>
                         </div>
                         <div className="skills-list-premium">
-                            <div className="empty-state-simple w-full">
-                                <p>Start your first logbook to track skills.</p>
-                            </div>
+                            {myLogs.length > 0 && myLogs.some(l => l.skills && l.skills.length > 0) ? (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', background: 'var(--bg-main)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                                    {[...new Set(myLogs.flatMap(l => l.skills || []))].slice(0, 8).map((skill, i) => (
+                                        <span key={i} style={{ fontSize: '0.8rem', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', padding: '0.3rem 0.6rem', borderRadius: '2rem', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="empty-state-simple w-full">
+                                    <p>Start your first logbook to track skills.</p>
+                                </div>
+                            )}
                         </div>
                         <button
                             className="btn btn-primary w-full mt-1"
