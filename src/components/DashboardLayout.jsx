@@ -20,6 +20,7 @@ const DashboardLayout = () => {
     const menuItems = {
         admin: [
             { path: '/dashboard/admin', icon: <Server size={20} />, label: 'Admin Console' },
+            { path: '/dashboard/admin/internships', icon: <Briefcase size={20} />, label: 'Manage Internships' },
             { path: '/dashboard/placements', icon: <Activity size={20} />, label: 'Placements' },
             { path: '/dashboard/reports', icon: <BarChart3 size={20} />, label: 'Global Reports' },
             { path: '/dashboard/admin/letters', icon: <Mail size={20} />, label: 'Letter Requests' },

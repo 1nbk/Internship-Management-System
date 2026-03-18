@@ -7,19 +7,22 @@ const AdminLetterRequests = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [requests, setRequests] = useState([]);
+    const [toast, setToast] = useState(null);
 
     React.useEffect(() => {
         const saved = JSON.parse(localStorage.getItem('letter_requests') || '[]');
         setRequests(saved);
     }, []);
 
-    const handleApprove = (id) => {
-        const updated = requests.map(req =>
-            req.id === id ? { ...req, status: 'issued' } : req
+    const handleApprove = (req) => {
+        const updated = requests.map(r =>
+            r.id === req.id ? { ...r, status: 'issued' } : r
         );
         setRequests(updated);
         localStorage.setItem('letter_requests', JSON.stringify(updated));
         setSelectedRequest(null);
+        setToast(`Letter approved! A confirmation has been sent to ${req.email || 'the student\'s email'}.`);
+        setTimeout(() => setToast(null), 4000);
     };
 
     const getStatusStyle = (status) => {
@@ -67,6 +70,7 @@ const AdminLetterRequests = () => {
                                 <th>Student</th>
                                 <th>Reason</th>
                                 <th>Target Company</th>
+                                <th>Email</th>
                                 <th>Requested On</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -87,6 +91,12 @@ const AdminLetterRequests = () => {
                                             <div className="company-cell">
                                                 <Building2 size={16} />
                                                 <span>{r.company}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="email-cell">
+                                                <Mail size={16} />
+                                                <span>{r.email || '—'}</span>
                                             </div>
                                         </td>
                                         <td>
@@ -116,7 +126,7 @@ const AdminLetterRequests = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="6" className="empty-table-cell">
+                                    <td colSpan="7" className="empty-table-cell">
                                         <div className="empty-state-simple">
                                             No pending letter requests.
                                         </div>
@@ -146,6 +156,12 @@ const AdminLetterRequests = () => {
                                 </div>
                             </div>
                             <div className="detail-section">
+                                <label>Student Email</label>
+                                <div className="detail-value">
+                                    <Mail size={16} /> {selectedRequest.email || 'Not provided'}
+                                </div>
+                            </div>
+                            <div className="detail-section">
                                 <label>Target Company</label>
                                 <div className="detail-value">
                                     <Building2 size={16} /> {selectedRequest.company}
@@ -168,11 +184,19 @@ const AdminLetterRequests = () => {
                         </div>
                         <div className="modal-footer">
                             <Button variant="secondary" onClick={() => setSelectedRequest(null)}>Cancel</Button>
-                            <Button onClick={() => handleApprove(selectedRequest.id)}>
+                            <Button onClick={() => handleApprove(selectedRequest)}>
                                 Approve & Send Letter <Send size={18} />
                             </Button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Toast Notification */}
+            {toast && (
+                <div className="toast-notification">
+                    <CheckCircle2 size={18} />
+                    <span>{toast}</span>
                 </div>
             )}
         </div>

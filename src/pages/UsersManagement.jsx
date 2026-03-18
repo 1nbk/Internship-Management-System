@@ -7,7 +7,7 @@ const UsersManagement = () => {
     const [activeTab, setActiveTab] = useState('supervisors');
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
-    const [newUser, setNewUser] = useState({ name: '', email: '', role: 'supervisor', department: '' });
+    const [newUser, setNewUser] = useState({ name: '', email: '', role: 'supervisor', department: '', institution: '', program: '', studentIdNum: '', year: '' });
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [assignment, setAssignment] = useState({ supervisorId: '' });
@@ -37,13 +37,15 @@ const UsersManagement = () => {
             ...newUser,
             status: 'active',
             date: new Date().toISOString().split('T')[0],
-            dept: newUser.department || 'N/A'
+            dept: newUser.department || 'N/A',
+            // Map student inputs if student
+            studentId: newUser.role === 'student' ? newUser.studentIdNum : undefined
         };
         const updated = [user, ...users];
         setUsers(updated);
         localStorage.setItem('ims_users', JSON.stringify(updated));
         setShowAddModal(false);
-        setNewUser({ name: '', email: '', role: 'supervisor', department: '' });
+        setNewUser({ name: '', email: '', role: 'supervisor', department: '', institution: '', program: '', studentIdNum: '', year: '' });
     };
 
     const handleStatusChange = (id, status) => {
@@ -149,6 +151,11 @@ const UsersManagement = () => {
                                                     <span className="role-tag">{u.role}</span>
                                                     {u.role === 'student' && u.supervisorName && (
                                                         <span className="assigned-tag">Assigned to: {u.supervisorName}</span>
+                                                    )}
+                                                    {u.role === 'student' && u.program && (
+                                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                                            {u.program && <div>{u.program}</div>}
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
@@ -275,6 +282,19 @@ const UsersManagement = () => {
                                         />
                                     </div>
                                 </div>
+                                {newUser.role === 'student' && (
+                                    <div className="student-fields" style={{ marginTop: '1rem', padding: '1rem', background: 'var(--bg-main)', borderRadius: 'var(--radius-md)' }}>
+                                        <div className="form-group mb-2">
+                                            <label>Program of Study</label>
+                                            <input
+                                                type="text"
+                                                value={newUser.program}
+                                                onChange={(e) => setNewUser({ ...newUser, program: e.target.value })}
+                                                placeholder="e.g. B.Sc. Information Tech"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             <div className="modal-footer">
                                 <Button variant="secondary" type="button" onClick={() => setShowAddModal(false)}>Cancel</Button>

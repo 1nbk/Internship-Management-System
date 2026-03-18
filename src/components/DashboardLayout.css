@@ -129,6 +129,9 @@
     transition: all 0.15s ease;
     position: relative;
     white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 48px;
 }
 
 .nav-icon-wrap {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Send, Building2, Calendar, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { FileText, Send, Building2, Calendar, MessageSquare, CheckCircle2, Mail, MapPin } from 'lucide-react';
 import Button from '../components/Button';
 import { useAuth } from '../context/AuthContext';
 import './Dashboards.css';
@@ -9,9 +9,15 @@ const LetterRequest = () => {
     const [submitted, setSubmitted] = useState(false);
     const [currentRequest, setCurrentRequest] = useState(null);
     const [formData, setFormData] = useState({
+        institution: user?.institution || '',
+        studentIdNum: '',
+        year: '',
         reason: '',
         company: '',
+        companyAddress: '',
+        email: user?.email || '',
         startDate: '',
+        endDate: '',
         notes: ''
     });
 
@@ -30,6 +36,7 @@ const LetterRequest = () => {
             id: Date.now(),
             studentId: user?.id,
             studentName: user?.name,
+            program: user?.program || 'N/A',
             ...formData,
             status: 'pending',
             dateSubmitted: new Date().toLocaleDateString()
@@ -98,6 +105,80 @@ const LetterRequest = () => {
                                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                                 />
                             </div>
+                            
+                            <div className="form-group-dash">
+                                <label><MapPin size={16} /> Company Address / Location</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. 123 Innovation Drive, Accra"
+                                    required
+                                    value={formData.companyAddress}
+                                    onChange={(e) => setFormData({ ...formData, companyAddress: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="form-group-dash" style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+                                <h4>Academic Details</h4>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>Please provide your current academic information for the letter.</p>
+                                
+                                <div className="form-group-dash mb-2">
+                                    <label>Institution Name</label>
+                                    <select
+                                        required
+                                        value={formData.institution}
+                                        onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+                                    >
+                                        <option value="">Select your institution...</option>
+                                        <option value="University of Ghana (UG)">University of Ghana (UG)</option>
+                                        <option value="Kwame Nkrumah University of Science and Technology (KNUST)">Kwame Nkrumah University of Science and Technology (KNUST)</option>
+                                        <option value="University of Cape Coast (UCC)">University of Cape Coast (UCC)</option>
+                                        <option value="University of Education, Winneba (UEW)">University of Education, Winneba (UEW)</option>
+                                        <option value="University for Development Studies (UDS)">University for Development Studies (UDS)</option>
+                                        <option value="Accra Technical University (ATU)">Accra Technical University (ATU)</option>
+                                        <option value="Ghana Communication Technology University (GCTU)">Ghana Communication Technology University (GCTU)</option>
+                                        <option value="Ashesi University">Ashesi University</option>
+                                        <option value="Academic City University College">Academic City University College</option>
+                                        <option value="Ghana Institute of Management and Public Administration (GIMPA)">Ghana Institute of Management and Public Administration (GIMPA)</option>
+                                    </select>
+                                </div>
+                                <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <div className="form-group-dash">
+                                        <label>Student ID Number</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. CS102934"
+                                            required
+                                            value={formData.studentIdNum}
+                                            onChange={(e) => setFormData({ ...formData, studentIdNum: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-group-dash">
+                                        <label>Year of Study</label>
+                                        <select
+                                            required
+                                            value={formData.year}
+                                            onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                                        >
+                                            <option value="">Select Year...</option>
+                                            <option value="Year 1">Year 1</option>
+                                            <option value="Year 2">Year 2</option>
+                                            <option value="Year 3">Year 3</option>
+                                            <option value="Year 4">Year 4</option>
+                                            <option value="Year 5">Year 5</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="form-group-dash">
+                                <label><Mail size={16} /> Your Email Address</label>
+                                <input
+                                    type="email"
+                                    placeholder="e.g. student@university.edu"
+                                    required
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                />
+                            </div>
 
                             <div className="form-group-dash">
                                 <label><FileText size={16} /> Reason for Request</label>
@@ -114,14 +195,25 @@ const LetterRequest = () => {
                                 </select>
                             </div>
 
-                            <div className="form-group-dash">
-                                <label><Calendar size={16} /> Preferred Internship Start Date</label>
-                                <input
-                                    type="date"
-                                    required
-                                    value={formData.startDate}
-                                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                                />
+                            <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="form-group-dash">
+                                    <label><Calendar size={16} /> Preferred Start Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        value={formData.startDate}
+                                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group-dash">
+                                    <label><Calendar size={16} /> Preferred End Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        value={formData.endDate}
+                                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                    />
+                                </div>
                             </div>
 
                             <div className="form-group-dash">
