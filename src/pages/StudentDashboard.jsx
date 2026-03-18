@@ -15,11 +15,45 @@ const StudentDashboard = () => {
         setLetterRequests(myRequests);
     }, [user?.id]);
 
+    const activeInternship = letterRequests.sort((a,b) => b.id - a.id).find(r => r.status === 'issued' || r.status === 'approved') || letterRequests[0];
+
+    let weeksCompleted = 0;
+    let totalWeeks = 12;
+    let daysRemaining = '--';
+    let progressPercentage = 0;
+
+    if (activeInternship && activeInternship.startDate && activeInternship.endDate) {
+        const start = new Date(activeInternship.startDate);
+        const end = new Date(activeInternship.endDate);
+        const now = new Date();
+
+        if (end > start) {
+            const totalMs = end - start;
+            const elapsedMs = Math.max(0, now - start);
+            
+            totalWeeks = Math.max(1, Math.ceil(totalMs / (1000 * 60 * 60 * 24 * 7)));
+
+            if (now < start) {
+                weeksCompleted = 0;
+                progressPercentage = 0;
+                daysRemaining = Math.ceil((start - now) / (1000 * 60 * 60 * 24)) + ' (until start)';
+            } else if (now >= end) {
+                weeksCompleted = totalWeeks;
+                progressPercentage = 100;
+                daysRemaining = '0';
+            } else {
+                weeksCompleted = Math.floor(elapsedMs / (1000 * 60 * 60 * 24 * 7));
+                progressPercentage = Math.round((elapsedMs / totalMs) * 100);
+                daysRemaining = Math.ceil((end - now) / (1000 * 60 * 60 * 24)).toString();
+            }
+        }
+    }
+
     const stats = [
-        { label: 'Weeks Completed', value: '0/12', icon: <Calendar size={24} />, color: 'blue' },
+        { label: 'Weeks Completed', value: `${weeksCompleted}/${totalWeeks}`, icon: <Calendar size={24} />, color: 'blue' },
         { label: 'Reports Approved', value: '0', icon: <CheckCircle2 size={24} />, color: 'green' },
         { label: 'Submission Streak', value: '0 weeks', icon: <TrendingUp size={24} />, color: 'purple' },
-        { label: 'Days Remaining', value: '--', icon: <Clock size={24} />, color: 'orange' },
+        { label: 'Days Remaining', value: daysRemaining, icon: <Clock size={24} />, color: 'orange' },
     ];
 
     const quickActions = [
@@ -41,6 +75,25 @@ const StudentDashboard = () => {
                     <GraduationCap size={80} strokeWidth={1} />
                 </div>
             </div>
+
+            {/* Issued Letters Banner */}
+            {letterRequests.some(r => r.status === 'issued') && (
+                <div className="alert-success fade-in" style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 1.5rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: 'var(--radius-lg)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ background: 'var(--success)', color: '#fff', padding: '0.6rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <FileText size={22} />
+                        </div>
+                        <div>
+                            <h4 style={{ color: 'var(--success)', marginBottom: '0.3rem', fontSize: '1.05rem' }}>Your Internship Letter is Ready!</h4>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', margin: 0 }}>The admin has approved your request for <strong>{letterRequests.find(r => r.status === 'issued').company}</strong>.</p>
+                        </div>
+                    </div>
+                    <button className="btn" style={{ background: 'var(--success)', color: '#fff', border: 'none', padding: '0.6rem 1.25rem', borderRadius: '2rem', cursor: 'pointer', fontWeight: '500' }} onClick={() => navigate('/dashboard/documents')}>
+                        <FileText size={16} style={{ display: 'inline', marginRight: '0.4rem', verticalAlign: 'middle' }} />
+                        View Document
+                    </button>
+                </div>
+            )}
 
             <div className="stats-grid">
                 {stats.map((stat, idx) => (
@@ -68,12 +121,12 @@ const StudentDashboard = () => {
                             <svg width="140" height="140" viewBox="0 0 140 140">
                                 <circle cx="70" cy="70" r="64" fill="none" stroke="#f1f5f9" strokeWidth="8" />
                                 <circle cx="70" cy="70" r="64" fill="none" stroke="#3b82f6" strokeWidth="8"
-                                    strokeDasharray="402.12" strokeDashoffset="402.12" strokeLinecap="round"
+                                    strokeDasharray="402.12" strokeDashoffset={402.12 - (402.12 * progressPercentage) / 100} strokeLinecap="round"
                                     style={{ transition: 'stroke-dashoffset 1s ease-in-out' }}
                                 />
                             </svg>
                             <div className="progress-ring-text">
-                                <span className="percent" style={{ color: '#3b82f6' }}>0%</span>
+                                <span className="percent" style={{ color: '#3b82f6' }}>{progressPercentage}%</span>
                                 <span className="label">Total</span>
                             </div>
                         </div>

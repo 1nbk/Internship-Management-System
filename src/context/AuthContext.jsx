@@ -26,7 +26,11 @@ export const AuthProvider = ({ children }) => {
             id: Math.random().toString(36).substr(2, 9),
             email,
             role,
-            name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1)
+            name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
+            ...(role === 'student' ? {
+                institution: 'University of Ghana (UG)',
+                program: 'B.Sc. Computer Science'
+            } : {})
         };
         setUser(mockUser);
         localStorage.setItem('ims_user', JSON.stringify(mockUser));
@@ -35,8 +39,12 @@ export const AuthProvider = ({ children }) => {
 
     const signup = (userData) => {
         // Mock signup logic
-        setUser(userData);
-        localStorage.setItem('ims_user', JSON.stringify(userData));
+        const newUserData = {
+            id: Math.random().toString(36).substr(2, 9),
+            ...userData
+        };
+        setUser(newUserData);
+        localStorage.setItem('ims_user', JSON.stringify(newUserData));
         return true;
     };
 

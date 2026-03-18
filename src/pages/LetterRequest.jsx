@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Send, Building2, Calendar, MessageSquare, CheckCircle2, Mail } from 'lucide-react';
+import { FileText, Send, Building2, Calendar, MessageSquare, CheckCircle2, Mail, MapPin } from 'lucide-react';
 import Button from '../components/Button';
 import { useAuth } from '../context/AuthContext';
 import './Dashboards.css';
@@ -9,13 +9,15 @@ const LetterRequest = () => {
     const [submitted, setSubmitted] = useState(false);
     const [currentRequest, setCurrentRequest] = useState(null);
     const [formData, setFormData] = useState({
-        institution: '',
+        institution: user?.institution || '',
         studentIdNum: '',
         year: '',
         reason: '',
         company: '',
-        email: '',
+        companyAddress: '',
+        email: user?.email || '',
         startDate: '',
+        endDate: '',
         notes: ''
     });
 
@@ -103,6 +105,17 @@ const LetterRequest = () => {
                                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                                 />
                             </div>
+                            
+                            <div className="form-group-dash">
+                                <label><MapPin size={16} /> Company Address / Location</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. 123 Innovation Drive, Accra"
+                                    required
+                                    value={formData.companyAddress}
+                                    onChange={(e) => setFormData({ ...formData, companyAddress: e.target.value })}
+                                />
+                            </div>
 
                             <div className="form-group-dash" style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
                                 <h4>Academic Details</h4>
@@ -182,14 +195,25 @@ const LetterRequest = () => {
                                 </select>
                             </div>
 
-                            <div className="form-group-dash">
-                                <label><Calendar size={16} /> Preferred Internship Start Date</label>
-                                <input
-                                    type="date"
-                                    required
-                                    value={formData.startDate}
-                                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                                />
+                            <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="form-group-dash">
+                                    <label><Calendar size={16} /> Preferred Start Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        value={formData.startDate}
+                                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group-dash">
+                                    <label><Calendar size={16} /> Preferred End Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        value={formData.endDate}
+                                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                    />
+                                </div>
                             </div>
 
                             <div className="form-group-dash">
