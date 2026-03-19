@@ -1,25 +1,45 @@
-import React, { useState } from 'react';
 import { FileText, User, Building2, Calendar, Mail, CheckCircle2, MoreVertical, Search, ExternalLink, X, Send } from 'lucide-react';
 import Button from '../components/Button';
+import { apiService } from '../api/apiService';
 import './Dashboards.css';
 
 const AdminLetterRequests = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchAllRequests = async () => {
+        try {
+            setLoading(true);
+            const data = await apiService.getLetterRequests();
+            const normalized = data.map(r => ({
+                ...r,
+                status: r.status.toLowerCase(),
+                date: new Date(r.dateSubmitted || r.createdAt).toISOString().split('T')[0],
+                studentName: r.student?.name || 'Unknown',
+                program: r.student?.program || 'N/A'
+            }));
+            setRequests(normalized);
+        } catch (err) {
+            console.error('Error fetching all requests:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     React.useEffect(() => {
-        const saved = JSON.parse(localStorage.getItem('letter_requests') || '[]');
-        setRequests(saved);
+        fetchAllRequests();
     }, []);
 
-    const handleApprove = (id) => {
-        const updated = requests.map(req =>
-            req.id === id ? { ...req, status: 'issued' } : req
-        );
-        setRequests(updated);
-        localStorage.setItem('letter_requests', JSON.stringify(updated));
-        setSelectedRequest(null);
+    const handleAction = async (id, status) => {
+        try {
+            await apiService.updateLetterStatus(id, status.toUpperCase());
+            fetchAllRequests();
+            setSelectedRequest(null);
+        } catch (err) {
+            console.error('Error updating letter status:', err);
+        }
     };
 
     const getStatusStyle = (status) => {
@@ -168,7 +188,7 @@ const AdminLetterRequests = () => {
                         </div>
                         <div className="modal-footer">
                             <Button variant="secondary" onClick={() => setSelectedRequest(null)}>Cancel</Button>
-                            <Button onClick={() => handleApprove(selectedRequest.id)}>
+                            <Button onClick={() => handleAction(selectedRequest.id, 'APPROVED')}>
                                 Approve & Send Letter <Send size={18} />
                             </Button>
                         </div>

@@ -1,64 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Building2, Briefcase, Filter, ChevronRight, Star } from 'lucide-react';
+import { apiService } from '../api/apiService';
 import Button from '../components/Button';
 import './Dashboards.css';
 
 const Opportunities = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState('All');
+    const [opportunities, setOpportunities] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const opportunities = [
-        {
-            id: 1,
-            title: 'Frontend Developer Intern',
-            company: 'TechNova Solutions',
-            location: 'Remote / Lagos',
-            type: 'Software Engineering',
-            duration: '6 Months',
-            status: 'Open',
-            rating: 4.8
-        },
-        {
-            id: 2,
-            title: 'UI/UX Design Intern',
-            company: 'CreativePulse Agency',
-            location: 'Abuja',
-            type: 'Design',
-            duration: '3 Months',
-            status: 'Open',
-            rating: 4.5
-        },
-        {
-            id: 3,
-            title: 'Data Analyst Intern',
-            company: 'DataStream Corp',
-            location: 'Lagos',
-            type: 'Data Science',
-            duration: '6 Months',
-            status: 'Urgent',
-            rating: 4.9
-        },
-        {
-            id: 4,
-            title: 'Backend Engineer (Node.js)',
-            company: 'FintechFlow',
-            location: 'Remote',
-            type: 'Software Engineering',
-            duration: '6 Months',
-            status: 'Open',
-            rating: 4.7
-        },
-        {
-            id: 5,
-            title: 'Digital Marketing Intern',
-            company: 'Global Reach Media',
-            location: 'Port Harcourt',
-            type: 'Marketing',
-            duration: '4 Months',
-            status: 'Open',
-            rating: 4.2
+    const fetchOpportunities = async () => {
+        try {
+            setLoading(true);
+            const data = await apiService.getOpportunities();
+            // Map backend fields to frontend expected fields
+            const normalized = data.map(o => ({
+                ...o,
+                duration: '6 Months', // Mock duration as it's not in schema yet
+                rating: 4.5 + (Math.random() * 0.5) // Random rating for aesthetic
+            }));
+            setOpportunities(normalized);
+        } catch (err) {
+            console.error('Error fetching opportunities:', err);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    useEffect(() => {
+        fetchOpportunities();
+    }, []);
 
     const filteredOpportunities = opportunities.filter(opp => {
         const matchesSearch = opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

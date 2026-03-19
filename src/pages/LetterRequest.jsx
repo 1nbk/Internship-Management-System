@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FileText, Send, Building2, Calendar, MessageSquare, CheckCircle2 } from 'lucide-react';
 import Button from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { apiService } from '../api/apiService';
 import './Dashboards.css';
 
 const LetterRequest = () => {
@@ -15,31 +16,38 @@ const LetterRequest = () => {
         notes: ''
     });
 
+    const fetchMyRequests = async () => {
+        try {
+            const data = await apiService.getMyLetterRequests();
+            if (data && data.length > 0) {
+                // For this UI, we just show the most recent one as "submitted"
+                const mostRecent = data[0];
+                setCurrentRequest({
+                    ...mostRecent,
+                    status: mostRecent.status.toLowerCase()
+                });
+                setSubmitted(true);
+            }
+        } catch (err) {
+            console.error('Error fetching my requests:', err);
+        }
+    };
+
     React.useEffect(() => {
-        const savedRequests = JSON.parse(localStorage.getItem('letter_requests') || '[]');
-        const myRequest = savedRequests.find(r => r.studentId === user?.id);
-        if (myRequest) {
-            setCurrentRequest(myRequest);
-            setSubmitted(true);
+        if (user?.id) {
+            fetchMyRequests();
         }
     }, [user?.id]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const newRequest = {
-            id: Date.now(),
-            studentId: user?.id,
-            studentName: user?.name,
-            ...formData,
-            status: 'pending',
-            dateSubmitted: new Date().toLocaleDateString()
-        };
-
-        const savedRequests = JSON.parse(localStorage.getItem('letter_requests') || '[]');
-        localStorage.setItem('letter_requests', JSON.stringify([...savedRequests, newRequest]));
-
-        setCurrentRequest(newRequest);
-        setSubmitted(true);
+        try {
+            await apiService.createLetterRequest(formData);
+            fetchMyRequests();
+        } catch (err) {
+            console.error('Error submitting request:', err);
+            alert('Failed to submit request. Please try again.');
+        }
     };
 
     if (submitted) {
@@ -64,9 +72,6 @@ const LetterRequest = () => {
                         </div>
                     </div>
                     <Button variant="secondary" onClick={() => {
-                        const savedRequests = JSON.parse(localStorage.getItem('letter_requests') || '[]');
-                        const filtered = savedRequests.filter(r => r.studentId !== user?.id);
-                        localStorage.setItem('letter_requests', JSON.stringify(filtered));
                         setSubmitted(false);
                         setCurrentRequest(null);
                     }}>Cancel & Start New</Button>
@@ -100,38 +105,35 @@ const LetterRequest = () => {
                             </div>
 
                             <div className="form-group-dash">
-                                <label><FileText size={16} /> Reason for Request</label>
-                                <select
-                                    required
-                                    value={formData.reason}
-                                    onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                                >
-                                    <option value="">Select a reason...</option>
-                                    <option value="new_placement">New Internship Placement</option>
-                                    <option value="extension">Internship Extension</option>
-                                    <option value="visa">Visa Application / Support</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-
-                            <div className="form-group-dash">
-                                <label><Calendar size={16} /> Preferred Internship Start Date</label>
+                                <label><Building2 size={16} /> Company Physical Address</label>
                                 <input
-                                    type="date"
+                                    type="text"
+                                    placeholder="e.g. 123 Tech Lane, Silicon Valley"
                                     required
-                                    value={formData.startDate}
-                                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                    value={formData.companyAddress}
+                                    onChange={(e) => setFormData({ ...formData, companyAddress: e.target.value })}
                                 />
                             </div>
 
-                            <div className="form-group-dash">
-                                <label><MessageSquare size={16} /> Additional Notes (Optional)</label>
-                                <textarea
-                                    placeholder="Any specific details you'd like to include..."
-                                    rows={4}
-                                    value={formData.notes}
-                                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                ></textarea>
+                            <div className="form-row-dash" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="form-group-dash">
+                                    <label><Calendar size={16} /> Internship Start Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        value={formData.startDate}
+                                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group-dash">
+                                    <label><Calendar size={16} /> Internship End Date</label>
+                                    <input
+                                        type="date"
+                                        required
+                                        value={formData.endDate}
+                                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                    />
+                                </div>
                             </div>
                         </div>
 

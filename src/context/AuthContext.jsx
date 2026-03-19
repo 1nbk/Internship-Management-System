@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authService } from '../api/authService';
 
 const AuthContext = createContext();
 
@@ -9,40 +10,49 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const savedUser = localStorage.getItem('ims_user');
-        if (savedUser) {
-            setUser(JSON.parse(savedUser));
-        }
-        setLoading(false);
+        const checkAuth = async () => {
+            const savedUser = localStorage.getItem('ims_user');
+            const token = authService.getToken();
+            
+            if (savedUser && token) {
+                setUser(JSON.parse(savedUser));
+            } else {
+                authService.logout();
+            }
+            setLoading(false);
+        };
+        checkAuth();
     }, []);
 
-    const login = (email, password) => {
-        // Simple mock logic: email determines role for testing
-        let role = 'student';
-        if (email.includes('admin')) role = 'admin';
-        else if (email.includes('supervisor')) role = 'supervisor';
-
-        const mockUser = {
-            id: Math.random().toString(36).substr(2, 9),
-            email,
-            role,
-            name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1)
-        };
-        setUser(mockUser);
-        localStorage.setItem('ims_user', JSON.stringify(mockUser));
-        return true;
+    const login = async (email, password) => {
+        try {
+            const data = await authService.login(email, password);
+            setUser(data.user);
+            authService.setToken(data.token);
+            localStorage.setItem('ims_user', JSON.stringify(data.user));
+            return { success: true };
+        } catch (error) {
+            console.error('Login failed:', error.message);
+            return { success: false, error: error.message };
+        }
     };
 
-    const signup = (userData) => {
-        // Mock signup logic
-        setUser(userData);
-        localStorage.setItem('ims_user', JSON.stringify(userData));
-        return true;
+    const signup = async (userData) => {
+        try {
+            const data = await authService.signup(userData);
+            setUser(data.user);
+            authService.setToken(data.token);
+            localStorage.setItem('ims_user', JSON.stringify(data.user));
+            return { success: true };
+        } catch (error) {
+            console.error('Signup failed:', error.message);
+            return { success: false, error: error.message };
+        }
     };
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem('ims_user');
+        authService.logout();
     };
 
     return (

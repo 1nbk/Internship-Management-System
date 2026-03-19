@@ -1,37 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, ExternalLink, MoreVertical, Building2, User, Calendar, CheckCircle2, Clock, AlertCircle, X, Shield, FileText } from 'lucide-react';
+import { apiService } from '../api/apiService';
 import Button from '../components/Button';
 import './Dashboards.css';
-
-const SEED_PLACEMENTS = [
-    { id: 1, student: 'Alice Student', company: 'TechNova Solutions', supervisor: 'Dr. Sarah Smith', startDate: '2026-02-15', status: 'active', department: 'CS', feedback: 'Excellent progress on the frontend module. Shows strong initiative.' },
-    { id: 2, student: 'Bob Kamau', company: 'DataSync Labs', supervisor: 'Prof. James Bond', startDate: '2026-01-20', status: 'active', department: 'IT', feedback: 'Good analytical skills. Needs to improve time management.' },
-    { id: 3, student: 'Claire Wanjiku', company: 'Green Energy Corp', supervisor: 'Dr. Sarah Smith', startDate: '2026-03-01', status: 'pending', department: 'ENG', feedback: 'Awaiting initial supervisor review.' },
-    { id: 4, student: 'David Omondi', company: 'FinTech Global', supervisor: 'Prof. James Bond', startDate: '2025-09-10', status: 'completed', department: 'CS', feedback: 'Successfully completed all deliverables. Recommend for full-time hiring.' },
-    { id: 5, student: 'Eve Nyambura', company: 'CloudBase Inc.', supervisor: 'Dr. Sarah Smith', startDate: '2026-02-28', status: 'active', department: 'CS', feedback: 'Adapting well to Agile workflows. Strong team player.' },
-];
 
 const Placements = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedPlacement, setSelectedPlacement] = useState(null);
     const [placements, setPlacements] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchPlacements = async () => {
+        try {
+            setLoading(true);
+            const users = await apiService.getUsers();
+            // Filter only students who have started internships or are assigned
+            const students = users.filter(u => u.role === 'STUDENT').map(s => ({
+                id: s.id,
+                student: s.name,
+                company: s.internshipStarted ? 'Assigned' : 'Not Assigned', // Backend doesn't store company in User yet
+                supervisor: s.supervisor?.name || 'Unassigned',
+                startDate: s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'N/A',
+                status: s.status.toLowerCase(),
+                department: s.department || 'N/A',
+                feedback: 'No recent feedback.'
+            }));
+            setPlacements(students);
+        } catch (err) {
+            console.error('Error fetching placements:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const saved = JSON.parse(localStorage.getItem('ims_placements') || '[]');
-        if (saved.length === 0) {
-            localStorage.setItem('ims_placements', JSON.stringify(SEED_PLACEMENTS));
-            setPlacements(SEED_PLACEMENTS);
-        } else {
-            setPlacements(saved);
-        }
+        fetchPlacements();
     }, []);
 
-    const handleUpdateStatus = (id, newStatus) => {
-        const updated = placements.map(p => p.id === id ? { ...p, status: newStatus } : p);
-        setPlacements(updated);
-        localStorage.setItem('ims_placements', JSON.stringify(updated));
-        if (selectedPlacement && selectedPlacement.id === id) {
-            setSelectedPlacement({ ...selectedPlacement, status: newStatus });
+    const handleUpdateStatus = async (id, newStatus) => {
+        try {
+            await apiService.updateUserStatus(id, newStatus.toUpperCase());
+            fetchPlacements();
+            if (selectedPlacement && selectedPlacement.id === id) {
+                setSelectedPlacement({ ...selectedPlacement, status: newStatus });
+            }
+        } catch (err) {
+            console.error('Error updating status:', err);
         }
     };
 

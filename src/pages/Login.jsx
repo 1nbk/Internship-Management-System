@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Layout, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Layout, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import './Auth.css';
@@ -8,13 +8,24 @@ import './Auth.css';
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        login(email, password);
-        navigate('/dashboard');
+        setError('');
+        setIsLoading(true);
+        
+        const result = await login(email, password);
+        
+        setIsLoading(false);
+        if (result.success) {
+            navigate('/dashboard');
+        } else {
+            setError(result.error || 'Login failed. Please check your credentials.');
+        }
     };
 
     return (
@@ -29,6 +40,13 @@ const Login = () => {
                     <p>Login to your account to continue</p>
                 </div>
 
+                {error && (
+                    <div className="auth-error-message">
+                        <AlertCircle size={18} />
+                        <span>{error}</span>
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="form-group">
                         <label>Email Address</label>
@@ -40,6 +58,7 @@ const Login = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
+                                disabled={isLoading}
                             />
                         </div>
                     </div>
@@ -54,19 +73,20 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
+                                disabled={isLoading}
                             />
                         </div>
                     </div>
 
                     <div className="auth-options">
                         <label className="checkbox-label">
-                            <input type="checkbox" /> Remember me
+                            <input type="checkbox" disabled={isLoading} /> Remember me
                         </label>
                         <a href="#" className="forgot-password">Forgot password?</a>
                     </div>
 
-                    <Button type="submit" size="lg" className="w-full">
-                        Sign In <ArrowRight size={18} />
+                    <Button type="submit" size="lg" className="w-full" isLoading={isLoading}>
+                        {isLoading ? 'Signing In...' : 'Sign In'} <ArrowRight size={18} />
                     </Button>
                 </form>
 

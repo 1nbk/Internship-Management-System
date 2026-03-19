@@ -1,7 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Users, UserCheck, Clock, FileCheck, ArrowRight, Mail, Shield, Briefcase, TrendingUp, Activity } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { apiService } from '../api/apiService';
 import './Dashboards.css';
 
 const AdminDashboard = () => {
@@ -9,12 +6,26 @@ const AdminDashboard = () => {
     const { user } = useAuth();
     const [letterRequests, setLetterRequests] = useState([]);
     const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [lettersData, usersData] = await Promise.all([
+                apiService.getLetterRequests(),
+                apiService.getUsers()
+            ]);
+            setLetterRequests(lettersData);
+            setUsers(usersData);
+        } catch (err) {
+            console.error('Error fetching admin dashboard data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const savedLetters = JSON.parse(localStorage.getItem('letter_requests') || '[]');
-        const savedUsers = JSON.parse(localStorage.getItem('ims_users') || '[]');
-        setLetterRequests(savedLetters);
-        setUsers(savedUsers);
+        fetchData();
     }, []);
 
     const totalStudents = users.filter(u => u.role === 'student').length;

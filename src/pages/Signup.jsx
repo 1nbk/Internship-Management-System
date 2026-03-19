@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Layout, Mail, Lock, User, Briefcase, GraduationCap, ShieldCheck } from 'lucide-react';
+import { Layout, Mail, Lock, User, Briefcase, GraduationCap, ShieldCheck, ArrowRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import './Auth.css';
@@ -10,13 +10,29 @@ const Signup = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { signup } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        signup({ name, email, role });
-        navigate('/dashboard');
+        setError('');
+        setIsLoading(true);
+
+        const result = await signup({ 
+            name, 
+            email, 
+            password, 
+            role: role.toUpperCase() // Backend expects uppercase role
+        });
+
+        setIsLoading(false);
+        if (result.success) {
+            navigate('/dashboard');
+        } else {
+            setError(result.error || 'Signup failed. Please try again.');
+        }
     };
 
     return (
@@ -31,12 +47,20 @@ const Signup = () => {
                     <p>Join the Internship Management System</p>
                 </div>
 
+                {error && (
+                    <div className="auth-error-message">
+                        <AlertCircle size={18} />
+                        <span>{error}</span>
+                    </div>
+                )}
+
                 <div className="role-selector">
                     <p>Select your role:</p>
                     <div className="role-options">
                         <button
                             className={`role-btn ${role === 'student' ? 'active' : ''}`}
                             onClick={() => setRole('student')}
+                            disabled={isLoading}
                         >
                             <GraduationCap size={20} />
                             <span>Student</span>
@@ -44,6 +68,7 @@ const Signup = () => {
                         <button
                             className={`role-btn ${role === 'supervisor' ? 'active' : ''}`}
                             onClick={() => setRole('supervisor')}
+                            disabled={isLoading}
                         >
                             <Briefcase size={20} />
                             <span>Supervisor</span>
@@ -51,6 +76,7 @@ const Signup = () => {
                         <button
                             className={`role-btn ${role === 'admin' ? 'active' : ''}`}
                             onClick={() => setRole('admin')}
+                            disabled={isLoading}
                         >
                             <ShieldCheck size={20} />
                             <span>Admin</span>
@@ -69,6 +95,7 @@ const Signup = () => {
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 required
+                                disabled={isLoading}
                             />
                         </div>
                     </div>
@@ -83,6 +110,7 @@ const Signup = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
+                                disabled={isLoading}
                             />
                         </div>
                     </div>
@@ -97,12 +125,13 @@ const Signup = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
+                                disabled={isLoading}
                             />
                         </div>
                     </div>
 
-                    <Button type="submit" size="lg" className="w-full">
-                        Create Account
+                    <Button type="submit" size="lg" className="w-full" isLoading={isLoading}>
+                        {isLoading ? 'Creating Account...' : 'Create Account'} <ArrowRight size={18} />
                     </Button>
                 </form>
 
