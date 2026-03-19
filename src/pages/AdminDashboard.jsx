@@ -1,3 +1,11 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+    Users, UserCheck, Clock, FileCheck, 
+    Mail, Shield, Briefcase, TrendingUp, 
+    Activity, ArrowRight 
+} from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { apiService } from '../api/apiService';
 import './Dashboards.css';
 

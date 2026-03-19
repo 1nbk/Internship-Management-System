@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { FileText, User, Building2, Calendar, Mail, CheckCircle2, MoreVertical, Search, ExternalLink, X, Send } from 'lucide-react';
 import Button from '../components/Button';
 import { apiService } from '../api/apiService';

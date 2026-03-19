@@ -54,18 +54,20 @@
 
 /* Card */
 .auth-card {
-    background: rgba(255, 255, 255, 0.97);
-    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
     padding: 2.5rem 2.5rem 2rem;
     border-radius: var(--radius-xl);
-    box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.1),
-        0 20px 50px -12px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
     width: 100%;
     max-width: 440px;
     position: relative;
-    z-index: 1;
-    animation: auth-card-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10;
+    overflow: hidden;
 }
 
 @keyframes auth-card-in {
@@ -103,16 +105,16 @@
 }
 
 .auth-header h1 {
-    font-size: 1.65rem;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-bottom: 0.35rem;
-    letter-spacing: -0.02em;
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.03em;
 }
 
 .auth-header p {
-    color: var(--text-muted);
-    font-size: 0.925rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
 }
 
 /* Error Message */
@@ -152,10 +154,10 @@
 }
 
 .form-group label {
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    color: var(--text-main);
-    letter-spacing: 0.01em;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.02em;
 }
 
 /* Input wrapper & icon fix */
@@ -178,25 +180,25 @@
 
 .input-wrapper input {
     width: 100%;
-    padding: 0.7rem 1rem 0.7rem 2.75rem;
-    border: 1.5px solid var(--border);
+    padding: 0.8rem 1rem 0.8rem 3rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
-    font-size: 0.925rem;
+    font-size: 0.95rem;
     font-family: inherit;
-    color: var(--text-main);
-    background: var(--bg-main);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
     outline: none;
     transition: var(--transition);
 }
 
 .input-wrapper input::placeholder {
-    color: #94a3b8;
+    color: rgba(255, 255, 255, 0.3);
 }
 
 .input-wrapper input:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
-    background: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 20px rgba(5, 150, 105, 0.2);
 }
 
 /* Auth options row */
@@ -290,22 +292,22 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.75rem 0.5rem;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-md);
-    background: var(--bg-main);
+    gap: 0.5rem;
+    padding: 1rem 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.03);
     transition: var(--transition);
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.5);
     cursor: pointer;
     font-family: inherit;
 }
 
 .role-btn:hover {
-    border-color: var(--primary);
-    background-color: #fff;
-    color: var(--text-main);
-    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+    transform: translateY(-2px);
 }
 
 .role-btn.active {

@@ -22,8 +22,10 @@ import Opportunities from './pages/Opportunities';
 const RoleRedirect = () => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'admin') return <Navigate to="/dashboard/admin" replace />;
-  if (user.role === 'supervisor') return <Navigate to="/dashboard/supervisor" replace />;
+  const role = user.role?.toLowerCase();
+  
+  if (role === 'admin') return <Navigate to="/dashboard/admin" replace />;
+  if (role === 'supervisor') return <Navigate to="/dashboard/supervisor" replace />;
   return <Navigate to="/dashboard/student" replace />;
 };
 

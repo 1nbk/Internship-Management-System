@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Layout, Mail, Lock, User, Briefcase, GraduationCap, ShieldCheck, ArrowRight, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import './Auth.css';
@@ -35,26 +36,60 @@ const Signup = () => {
         }
     };
 
+    const containerVariants = {
+        hidden: { opacity: 0, y: 30 },
+        visible: { 
+            opacity: 1, 
+            y: 0,
+            transition: { 
+                duration: 0.6, 
+                ease: [0.16, 1, 0.3, 1],
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, scale: 0.95 },
+        visible: { 
+            opacity: 1, 
+            scale: 1,
+            transition: { duration: 0.3 }
+        }
+    };
+
     return (
         <div className="auth-page">
-            <div className="auth-card">
+            <motion.div 
+                className="auth-card"
+                initial="hidden"
+                animate="visible"
+                variants={containerVariants}
+            >
                 <div className="auth-header">
                     <Link to="/" className="auth-logo">
                         <Layout size={32} />
                         <span>IMS Portal</span>
                     </Link>
-                    <h1>Create Account</h1>
-                    <p>Join the Internship Management System</p>
+                    <motion.h1 variants={itemVariants}>Create Account</motion.h1>
+                    <motion.p variants={itemVariants}>Join the Internship Management System</motion.p>
                 </div>
 
-                {error && (
-                    <div className="auth-error-message">
-                        <AlertCircle size={18} />
-                        <span>{error}</span>
-                    </div>
-                )}
+                <AnimatePresence>
+                    {error && (
+                        <motion.div 
+                            className="auth-error-message"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                        >
+                            <AlertCircle size={18} />
+                            <span>{error}</span>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-                <div className="role-selector">
+                <motion.div className="role-selector" variants={itemVariants}>
                     <p>Select your role:</p>
                     <div className="role-options">
                         <button
@@ -82,10 +117,10 @@ const Signup = () => {
                             <span>Admin</span>
                         </button>
                     </div>
-                </div>
+                </motion.div>
 
                 <form onSubmit={handleSubmit} className="auth-form">
-                    <div className="form-group">
+                    <motion.div className="form-group" variants={itemVariants}>
                         <label>Full Name</label>
                         <div className="input-wrapper">
                             <User className="input-icon" size={18} />
@@ -98,9 +133,9 @@ const Signup = () => {
                                 disabled={isLoading}
                             />
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="form-group">
+                    <motion.div className="form-group" variants={itemVariants}>
                         <label>Email Address</label>
                         <div className="input-wrapper">
                             <Mail className="input-icon" size={18} />
@@ -113,9 +148,9 @@ const Signup = () => {
                                 disabled={isLoading}
                             />
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="form-group">
+                    <motion.div className="form-group" variants={itemVariants}>
                         <label>Password</label>
                         <div className="input-wrapper">
                             <Lock className="input-icon" size={18} />
@@ -128,17 +163,24 @@ const Signup = () => {
                                 disabled={isLoading}
                             />
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <Button type="submit" size="lg" className="w-full" isLoading={isLoading}>
-                        {isLoading ? 'Creating Account...' : 'Create Account'} <ArrowRight size={18} />
-                    </Button>
+                    <motion.div variants={itemVariants}>
+                        <Button type="submit" size="lg" className="w-full" isLoading={isLoading}>
+                            {isLoading ? 'Creating Account...' : 'Create Account'} <ArrowRight size={18} />
+                        </Button>
+                    </motion.div>
                 </form>
 
-                <div className="auth-footer">
+                <motion.div 
+                    className="auth-footer"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                >
                     Already have an account? <Link to="/login">Sign in</Link>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </div>
     );
 };

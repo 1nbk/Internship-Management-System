@@ -1,3 +1,5 @@
+import React, { useState, useEffect } from 'react';
+import { TrendingUp, BarChart3, Printer, Download } from 'lucide-react';
 import { apiService } from '../api/apiService';
 import './Dashboards.css';
 

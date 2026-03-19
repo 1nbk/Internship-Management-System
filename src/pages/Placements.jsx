@@ -1,3 +1,9 @@
+import React, { useState, useEffect } from 'react';
+import { 
+    Search, Building2, User, Calendar, 
+    Clock, AlertCircle, CheckCircle2, 
+    ExternalLink, MoreVertical, X, Shield 
+} from 'lucide-react';
 import { apiService } from '../api/apiService';
 import Button from '../components/Button';
 import './Dashboards.css';
