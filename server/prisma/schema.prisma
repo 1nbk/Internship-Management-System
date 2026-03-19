@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  SUPERVISOR
+  ADMIN
+}
+
+enum Status {
+  ACTIVE
+  PENDING
+  REJECTED
+  ISSUED
+  OPEN
+  CLOSED
+  APPROVED
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  password          String
+  name              String
+  role              Role      @default(STUDENT)
+  status            Status    @default(ACTIVE)
+  department        String?
+  institution       String?
+  program           String?
+  studentId         String?
+  year              String?
+  supervisorId      Int?
+  internshipStarted Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  applications      Application[]
+  letterRequests    LetterRequest[]
+  logbooksSubmitted Logbook[]       @relation("StudentLogbooks")
+  logbooksSupervised Logbook[]      @relation("SupervisorLogbooks")
+  interns           User[]          @relation("SupervisorInterns")
+  supervisor        User?           @relation("SupervisorInterns", fields: [supervisorId], references: [id])
+}
+
+model InternshipOpportunity {
+  id          Int           @id @default(autoincrement())
+  title       String
+  company     String
+  location    String
+  type        String
+  description String
+  status      Status        @default(OPEN)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  applications Application[]
+}
+
+model Application {
+  id            Int                   @id @default(autoincrement())
+  opportunityId Int
+  studentId     Int
+  status        Status                @default(PENDING)
+  dateSubmitted DateTime              @default(now())
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  opportunity   InternshipOpportunity @relation(fields: [opportunityId], references: [id])
+  student       User                  @relation(fields: [studentId], references: [id])
+}
+
+model LetterRequest {
+  id             Int      @id @default(autoincrement())
+  studentId      Int
+  company        String
+  companyAddress String
+  startDate      String
+  endDate        String
+  status         Status   @default(PENDING)
+  dateSubmitted  DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  student        User     @relation(fields: [studentId], references: [id])
+}
+
+model Logbook {
+  id            Int      @id @default(autoincrement())
+  studentId     Int
+  supervisorId  Int
+  week          Int
+  content       String
+  skills        String[]
+  status        Status   @default(PENDING)
+  date          String
+  feedback      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  student       User     @relation("StudentLogbooks", fields: [studentId], references: [id])
+  supervisor    User     @relation("SupervisorLogbooks", fields: [supervisorId], references: [id])
+}
