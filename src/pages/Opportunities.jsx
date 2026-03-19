@@ -1,36 +1,76 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Building2, Briefcase, Filter, ChevronRight, Star } from 'lucide-react';
-import { apiService } from '../api/apiService';
+import { Search, MapPin, Building2, Briefcase, ChevronRight, CheckCircle2, X } from 'lucide-react';
 import Button from '../components/Button';
+import { useAuth } from '../context/AuthContext';
 import './Dashboards.css';
 
 const Opportunities = () => {
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState('All');
+    
+    // Data states
     const [opportunities, setOpportunities] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const fetchOpportunities = async () => {
-        try {
-            setLoading(true);
-            const data = await apiService.getOpportunities();
-            // Map backend fields to frontend expected fields
-            const normalized = data.map(o => ({
-                ...o,
-                duration: '6 Months', // Mock duration as it's not in schema yet
-                rating: 4.5 + (Math.random() * 0.5) // Random rating for aesthetic
-            }));
-            setOpportunities(normalized);
-        } catch (err) {
-            console.error('Error fetching opportunities:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [myApplications, setMyApplications] = useState([]);
+    
+    // Modal states
+    const [selectedOpp, setSelectedOpp] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [toast, setToast] = useState(null);
+    const [coverNote, setCoverNote] = useState('');
 
     useEffect(() => {
-        fetchOpportunities();
-    }, []);
+        // Load opportunities
+        const savedOpps = JSON.parse(localStorage.getItem('ims_opportunities') || '[]');
+        setOpportunities(savedOpps);
+
+        // Load applications to see if already applied
+        const savedApps = JSON.parse(localStorage.getItem('ims_applications') || '[]');
+        const userApps = savedApps.filter(a => a.studentId === user?.id);
+        setMyApplications(userApps);
+    }, [user?.id]);
+
+    const showNotification = (msg) => {
+        setToast(msg);
+        setTimeout(() => setToast(null), 4000);
+    };
+
+    const handleApplyClick = (opp) => {
+        setSelectedOpp(opp);
+        setCoverNote('');
+        setShowModal(true);
+    };
+
+    const submitApplication = (e) => {
+        e.preventDefault();
+        
+        const newApp = {
+            id: Date.now(),
+            studentId: user?.id,
+            studentName: user?.name,
+            studentEmail: user?.email || 'student@example.com',
+            institution: user?.institution || 'N/A',
+            program: user?.program || 'N/A',
+            studentIdNumber: user?.studentId || 'N/A',
+            year: user?.year || 'N/A',
+            opportunityId: selectedOpp.id,
+            opportunityTitle: selectedOpp.title,
+            company: selectedOpp.company,
+            status: 'pending',
+            dateApplied: new Date().toLocaleDateString(),
+            coverNote
+        };
+
+        const allApps = JSON.parse(localStorage.getItem('ims_applications') || '[]');
+        const updatedApps = [...allApps, newApp];
+        localStorage.setItem('ims_applications', JSON.stringify(updatedApps));
+        
+        // Update local state so button changes to "Applied"
+        setMyApplications([...myApplications, newApp]);
+        
+        setShowModal(false);
+        showNotification(`Application submitted to ${selectedOpp.company}!`);
+    };
 
     const filteredOpportunities = opportunities.filter(opp => {
         const matchesSearch = opp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -38,6 +78,10 @@ const Opportunities = () => {
         const matchesFilter = filter === 'All' || opp.type === filter;
         return matchesSearch && matchesFilter;
     });
+
+    const hasApplied = (oppId) => {
+        return myApplications.some(app => app.opportunityId === oppId);
+    };
 
     return (
         <div className="dashboard-view fade-in">
@@ -60,7 +104,7 @@ const Opportunities = () => {
             </div>
 
             <div className="filters-bar-premium">
-                {['All', 'Software Engineering', 'Design', 'Data Science', 'Marketing'].map((cat) => (
+                {['All', 'Software Engineering', 'Design', 'Data Science', 'Marketing', 'Other'].map((cat) => (
                     <button
                         key={cat}
                         className={`filter-chip ${filter === cat ? 'active' : ''}`}
@@ -83,10 +127,6 @@ const Opportunities = () => {
                                     <div className="opp-status-badge">
                                         {opp.status}
                                     </div>
-                                    <div className="opp-rating">
-                                        <Star size={14} fill="currentColor" />
-                                        <span>{opp.rating}</span>
-                                    </div>
                                 </div>
                             </div>
 
@@ -104,27 +144,89 @@ const Opportunities = () => {
                                         <span>{opp.duration}</span>
                                     </div>
                                 </div>
+                                
+                                {opp.description && (
+                                    <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: 'var(--text-muted)', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                        {opp.description}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="opp-card-footer">
-                                <Button variant="outline" className="w-full">View Details</Button>
-                                <Button className="w-full">
-                                    Apply Now <ChevronRight size={16} />
-                                </Button>
+                                {hasApplied(opp.id) ? (
+                                    <Button variant="outline" className="w-full" disabled style={{ color: 'var(--success)', borderColor: 'var(--success)', background: 'var(--success-light)' }}>
+                                        <CheckCircle2 size={16} style={{ marginRight: '6px' }} /> Applied
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <Button variant="outline" className="w-full">Details</Button>
+                                        <Button className="w-full" onClick={() => handleApplyClick(opp)} disabled={opp.status === 'Closed'}>
+                                            Apply Now <ChevronRight size={16} />
+                                        </Button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))
                 ) : (
-                    <div className="empty-state-full">
+                    <div className="empty-state-full" style={{ gridColumn: '1 / -1' }}>
                         <Search size={48} />
                         <h3>No opportunities found</h3>
-                        <p>Try adjusting your search or filters to find what you're looking for.</p>
+                        <p>No active internship postings match your search criteria right now.</p>
                         <Button variant="secondary" onClick={() => { setSearchTerm(''); setFilter('All'); }}>
                             Clear All Filters
                         </Button>
                     </div>
                 )}
             </div>
+
+            {/* Application Modal */}
+            {showModal && selectedOpp && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ maxWidth: '500px' }}>
+                        <div className="modal-header">
+                            <h3>Apply for {selectedOpp.title}</h3>
+                            <button className="close-btn" onClick={() => setShowModal(false)}><X size={20} /></button>
+                        </div>
+                        <form onSubmit={submitApplication}>
+                            <div className="modal-body">
+                                <div className="company-info-box" style={{ padding: '1rem', background: 'var(--bg-main)', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                    <div className="company-logo-placeholder" style={{ width: '40px', height: '40px' }}><Building2 size={20} /></div>
+                                    <div>
+                                        <strong style={{ display: 'block' }}>{selectedOpp.company}</strong>
+                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{selectedOpp.location} • {selectedOpp.type}</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="form-group-dash">
+                                    <label>Add a short cover note (Optional)</label>
+                                    <textarea 
+                                        rows={4} 
+                                        value={coverNote} 
+                                        onChange={(e) => setCoverNote(e.target.value)} 
+                                        placeholder="Why are you a good fit for this role?"
+                                    />
+                                </div>
+                                
+                                <div className="info-alert" style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '0.875rem', borderRadius: 'var(--radius-md)', fontSize: '0.875rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                                    <CheckCircle2 size={16} style={{ marginTop: '2px', flexShrink: 0 }} />
+                                    <span>Your student profile and academic transcripts will be automatically attached to this application.</span>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <Button variant="secondary" type="button" onClick={() => setShowModal(false)}>Cancel</Button>
+                                <Button type="submit">Submit Application</Button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {toast && (
+                <div className="toast-notification">
+                    <CheckCircle2 size={18} /><span>{toast}</span>
+                </div>
+            )}
         </div>
     );
 };

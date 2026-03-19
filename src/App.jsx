@@ -17,6 +17,7 @@ import UsersManagement from './pages/UsersManagement';
 import LetterRequest from './pages/LetterRequest';
 import AdminLetterRequests from './pages/AdminLetterRequests';
 import Opportunities from './pages/Opportunities';
+import AdminOpportunities from './pages/AdminOpportunities';
 
 // Helper component for role-based redirection
 const RoleRedirect = () => {
@@ -46,6 +47,7 @@ function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="users" element={<UsersManagement />} />
               <Route path="admin/letters" element={<AdminLetterRequests />} />
+              <Route path="admin/internships" element={<AdminOpportunities />} />
             </Route>
 
             {/* Supervisor Routes */}
