@@ -17,6 +17,7 @@ import UsersManagement from './pages/UsersManagement';
 import LetterRequest from './pages/LetterRequest';
 import AdminLetterRequests from './pages/AdminLetterRequests';
 import AdminOpportunities from './pages/AdminOpportunities';
+import Opportunities from './pages/Opportunities';
 import Profile from './pages/Profile';
 
 // Helper component for role-based redirection
@@ -34,8 +35,9 @@ import { ToastProvider } from './context/ToastContext';
 
 function App() {
   return (
-    <ToastProvider>
-      <Router>
+    <AuthProvider>
+      <ToastProvider>
+        <Router>
         <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/login" element={<Login />} />
@@ -78,6 +80,7 @@ function App() {
         </Routes>
       </Router>
     </ToastProvider>
+  </AuthProvider>
   );
 }
 
