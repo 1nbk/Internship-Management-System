@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { FileText, Send, Building2, Calendar, MessageSquare, CheckCircle2, Mail, MapPin } from 'lucide-react';
-import Button from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { apiService } from '../api/apiService';
 import './Dashboards.css';
 
 const LetterRequest = () => {
     const { user } = useAuth();
+    const toast = useToast();
     const [submitted, setSubmitted] = useState(false);
     const [currentRequest, setCurrentRequest] = useState(null);
     const [formData, setFormData] = useState({
@@ -49,10 +48,11 @@ const LetterRequest = () => {
         e.preventDefault();
         try {
             await apiService.createLetterRequest(formData);
+            toast.success('Request submitted successfully!');
             fetchMyRequests();
         } catch (err) {
             console.error('Error submitting request:', err);
-            alert('Failed to submit request. Please try again.');
+            toast.error('Failed to submit request. Please try again.');
         }
     };
 

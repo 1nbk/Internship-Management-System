@@ -16,8 +16,8 @@ import Reports from './pages/Reports';
 import UsersManagement from './pages/UsersManagement';
 import LetterRequest from './pages/LetterRequest';
 import AdminLetterRequests from './pages/AdminLetterRequests';
-import Opportunities from './pages/Opportunities';
 import AdminOpportunities from './pages/AdminOpportunities';
+import Profile from './pages/Profile';
 
 // Helper component for role-based redirection
 const RoleRedirect = () => {
@@ -30,9 +30,11 @@ const RoleRedirect = () => {
   return <Navigate to="/dashboard/student" replace />;
 };
 
+import { ToastProvider } from './context/ToastContext';
+
 function App() {
   return (
-    <AuthProvider>
+    <ToastProvider>
       <Router>
         <Routes>
           <Route path="/" element={<Homepage />} />
@@ -64,6 +66,9 @@ function App() {
               <Route path="documents" element={<Documents />} />
             </Route>
 
+            {/* Shared Dashboard Routes */}
+            <Route path="profile" element={<Profile />} />
+
             {/* Dashboard Redirects */}
             <Route index element={<RoleRedirect />} />
             <Route path="*" element={<RoleRedirect />} />
@@ -72,7 +77,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
-    </AuthProvider>
+    </ToastProvider>
   );
 }
 

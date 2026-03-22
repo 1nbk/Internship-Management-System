@@ -112,5 +112,14 @@ export const apiService = {
             body: JSON.stringify({ status, feedback }),
         });
         return handleResponse(response);
+    },
+
+    async updateProfile(profileData) {
+        const response = await fetch(`${API_BASE_URL}/users/profile`, {
+            method: 'PATCH',
+            headers: getHeaders(),
+            body: JSON.stringify(profileData),
+        });
+        return handleResponse(response);
     }
 };

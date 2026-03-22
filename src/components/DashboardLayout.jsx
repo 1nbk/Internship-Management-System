@@ -25,11 +25,13 @@ const DashboardLayout = () => {
             { path: '/dashboard/reports', icon: <BarChart3 size={20} />, label: 'Global Reports' },
             { path: '/dashboard/admin/letters', icon: <Mail size={20} />, label: 'Letter Requests' },
             { path: '/dashboard/users', icon: <Shield size={20} />, label: 'User Management' },
+            { path: '/dashboard/profile', icon: <UserCircle size={20} />, label: 'My Profile' },
         ],
         supervisor: [
             { path: '/dashboard/supervisor', icon: <Briefcase size={20} />, label: 'Internship Overview' },
             { path: '/dashboard/my-interns', icon: <UserCircle size={20} />, label: 'My Interns' },
             { path: '/dashboard/reviews', icon: <ClipboardList size={20} />, label: 'Weekly Reviews' },
+            { path: '/dashboard/profile', icon: <UserCircle size={20} />, label: 'My Profile' },
         ],
         student: [
             { path: '/dashboard/student', icon: <Activity size={20} />, label: 'My Progress' },
@@ -37,6 +39,7 @@ const DashboardLayout = () => {
             { path: '/dashboard/letter-request', icon: <Send size={20} />, label: 'Request Letter' },
             { path: '/dashboard/logbook', icon: <ClipboardList size={20} />, label: 'Weekly Logbook' },
             { path: '/dashboard/documents', icon: <FolderOpen size={20} />, label: 'Documents' },
+            { path: '/dashboard/profile', icon: <UserCircle size={20} />, label: 'My Profile' },
         ]
     };
 

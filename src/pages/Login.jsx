@@ -3,29 +3,30 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Layout, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import Button from '../components/Button';
 import './Auth.css';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
+    const toast = useToast();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
         setIsLoading(true);
         
         const result = await login(email, password);
         
         setIsLoading(false);
         if (result.success) {
+            toast.success('Welcome back! Logging you in...');
             navigate('/dashboard');
         } else {
-            setError(result.error || 'Login failed. Please check your credentials.');
+            toast.error(result.error || 'Login failed. Please check your credentials.');
         }
     };
 
@@ -64,17 +65,6 @@ const Login = () => {
                     <motion.h1 variants={itemVariants}>Welcome Back</motion.h1>
                     <motion.p variants={itemVariants}>Login to your account to continue</motion.p>
                 </div>
-
-                {error && (
-                    <motion.div 
-                        className="auth-error-message"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                    >
-                        <AlertCircle size={18} />
-                        <span>{error}</span>
-                    </motion.div>
-                )}
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     <motion.div className="form-group" variants={itemVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>

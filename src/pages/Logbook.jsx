@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Send, Plus, CheckCircle, XCircle, Clock, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../api/apiService';
+import { useToast } from '../context/ToastContext';
 import Button from '../components/Button';
 import './Logbook.css';
 
 const Logbook = () => {
     const { user } = useAuth();
+    const toast = useToast();
     const [activeWeek, setActiveWeek] = useState(1);
     const [tasks, setTasks] = useState('');
     const [skillsString, setSkillsString] = useState('');
@@ -42,10 +42,8 @@ const Logbook = () => {
         
         // Check for supervisor assignment (from dev2 logic)
         if (user?.role?.toLowerCase() === 'student' && !user?.supervisorId) {
-            // Re-fetch user or check if supervisor name exists in the context user object
-            // For now, if user object doesn't have it, we show a friendly warning
-            alert('Cannot submit logbook yet! Please ensure your supervisor has been assigned by the Admin.');
-            // Note: Ideally the backend would also enforce this.
+            toast.warning('Cannot submit logbook yet! Please ensure your supervisor has been assigned by the Admin.');
+            return;
         }
 
         try {
@@ -58,10 +56,11 @@ const Logbook = () => {
             });
             setTasks('');
             setSkillsString('');
+            toast.success('Logbook submitted successfully!');
             await fetchLogs();
         } catch (err) {
             console.error('Error submitting logbook:', err);
-            alert(err.message || 'Failed to submit logbook.');
+            toast.error(err.message || 'Failed to submit logbook.');
         } finally {
             setLoading(false);
         }

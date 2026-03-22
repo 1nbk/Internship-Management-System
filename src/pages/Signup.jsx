@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Layout, Mail, Lock, User, Briefcase, GraduationCap, ShieldCheck, BookOpen, Building2, ArrowRight, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import Button from '../components/Button';
 import './Auth.css';
 
@@ -11,7 +12,6 @@ const Signup = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     
     // Academic fields (Student specific)
@@ -19,11 +19,11 @@ const Signup = () => {
     const [program, setProgram] = useState('');
 
     const { signup } = useAuth();
+    const toast = useToast();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
         setIsLoading(true);
 
         const userData = { 
@@ -38,9 +38,10 @@ const Signup = () => {
 
         setIsLoading(false);
         if (result.success) {
+            toast.success('Account created successfully!');
             navigate('/dashboard');
         } else {
-            setError(result.error || 'Signup failed. Please try again.');
+            toast.error(result.error || 'Signup failed. Please try again.');
         }
     };
 
@@ -82,20 +83,6 @@ const Signup = () => {
                     <motion.h1 variants={itemVariants}>Create Account</motion.h1>
                     <motion.p variants={itemVariants}>Join the Internship Management System</motion.p>
                 </div>
-
-                <AnimatePresence>
-                    {error && (
-                        <motion.div 
-                            className="auth-error-message"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                        >
-                            <AlertCircle size={18} />
-                            <span>{error}</span>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
 
                 <motion.div className="role-selector" variants={itemVariants}>
                     <p>Select your role:</p>
