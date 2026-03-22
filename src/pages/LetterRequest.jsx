@@ -30,7 +30,7 @@ const LetterRequest = () => {
                 const mostRecent = data[0];
                 setCurrentRequest({
                     ...mostRecent,
-                    status: mostRecent.status.toLowerCase()
+                    status: (mostRecent.status || 'pending').toLowerCase()
                 });
                 setSubmitted(true);
             }
@@ -47,7 +47,6 @@ const LetterRequest = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-<<<<<<< HEAD
         try {
             await apiService.createLetterRequest(formData);
             fetchMyRequests();
@@ -55,23 +54,6 @@ const LetterRequest = () => {
             console.error('Error submitting request:', err);
             alert('Failed to submit request. Please try again.');
         }
-=======
-        const newRequest = {
-            id: Date.now(),
-            studentId: user?.id,
-            studentName: user?.name,
-            program: user?.program || 'N/A',
-            ...formData,
-            status: 'pending',
-            dateSubmitted: new Date().toLocaleDateString()
-        };
-
-        const savedRequests = JSON.parse(localStorage.getItem('letter_requests') || '[]');
-        localStorage.setItem('letter_requests', JSON.stringify([...savedRequests, newRequest]));
-
-        setCurrentRequest(newRequest);
-        setSubmitted(true);
->>>>>>> dev1
     };
 
     if (submitted) {
@@ -195,7 +177,7 @@ const LetterRequest = () => {
                                 <label><Mail size={16} /> Your Email Address</label>
                                 <input
                                     type="email"
-                                    placeholder="e.g. student@university.edu"
+                                    placeholder="e.g. student@ university.edu"
                                     required
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -203,16 +185,6 @@ const LetterRequest = () => {
                             </div>
 
                             <div className="form-group-dash">
-<<<<<<< HEAD
-                                <label><Building2 size={16} /> Company Physical Address</label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. 123 Tech Lane, Silicon Valley"
-                                    required
-                                    value={formData.companyAddress}
-                                    onChange={(e) => setFormData({ ...formData, companyAddress: e.target.value })}
-                                />
-=======
                                 <label><FileText size={16} /> Reason for Request</label>
                                 <select
                                     required
@@ -228,28 +200,6 @@ const LetterRequest = () => {
                             </div>
 
                             <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                <div className="form-group-dash">
-                                    <label><Calendar size={16} /> Preferred Start Date</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        value={formData.startDate}
-                                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                                    />
-                                </div>
-                                <div className="form-group-dash">
-                                    <label><Calendar size={16} /> Preferred End Date</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        value={formData.endDate}
-                                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                                    />
-                                </div>
->>>>>>> dev1
-                            </div>
-
-                            <div className="form-row-dash" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div className="form-group-dash">
                                     <label><Calendar size={16} /> Internship Start Date</label>
                                     <input
