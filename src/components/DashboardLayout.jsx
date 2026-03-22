@@ -40,8 +40,9 @@ const DashboardLayout = () => {
         ]
     };
 
-    const roleMenu = menuItems[user?.role || 'student'];
-    const roleLabel = user?.role === 'admin' ? 'ADMIN' : user?.role === 'supervisor' ? 'SUPERVISOR' : 'STUDENT';
+    const role = user?.role?.toLowerCase() || 'student';
+    const roleMenu = menuItems[role] || menuItems.student;
+    const roleLabel = role === 'admin' ? 'ADMIN' : role === 'supervisor' ? 'SUPERVISOR' : 'STUDENT';
 
     return (
         <div className="dashboard-container">

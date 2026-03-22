@@ -1,55 +1,79 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, Clock, AlertCircle, ArrowRight, CheckCircle, XCircle, MessageSquare } from 'lucide-react';
+import { Users, FileText, Clock, AlertCircle, CheckCircle, XCircle, ChevronRight, X, MessageSquare } from 'lucide-react';
+import { apiService } from '../api/apiService';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import './Dashboards.css';
 
 const SupervisorDashboard = () => {
     const { user } = useAuth();
+    const [pendingReports, setPendingReports] = useState([]);
     const [myInterns, setMyInterns] = useState([]);
-    const [allReports, setAllReports] = useState([]);
-    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [stats, setStats] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [selectedReport, setSelectedReport] = useState(null);
     const [feedback, setFeedback] = useState('');
 
-    useEffect(() => {
-        const users = JSON.parse(localStorage.getItem('ims_users') || '[]');
-        const interns = users.filter(u => u.role === 'student' && u.supervisorId == user?.id);
-        setMyInterns(interns);
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const logsData = await apiService.getInternsLogs();
+            
+            // Map logs to UI format
+            const reports = logsData.map(l => ({
+                ...l,
+                id: l.id,
+                week: l.week || '?',
+                studentName: l.student?.name || 'Unknown',
+                program: l.student?.program || 'N/A',
+                date: new Date(l.createdAt).toLocaleDateString(),
+                status: (l.status || 'PENDING').toLowerCase(),
+                content: l.content || '',
+                skills: l.skills || []
+            }));
 
-        const logs = JSON.parse(localStorage.getItem('ims_logbooks') || '[]');
-        const myLogs = logs.filter(log => log.supervisorId == user?.id).sort((a,b) => b.id - a.id);
-        setAllReports(myLogs);
-    }, [user?.id]);
+            const pending = reports.filter(r => r.status === 'pending');
+            setPendingReports(pending);
 
-    const pendingReports = allReports.filter(r => r.status === 'pending');
-    const approvedReports = allReports.filter(r => r.status === 'approved');
+            // Get unique interns
+            const internsMap = {};
+            reports.forEach(r => {
+                if (r.studentId && !internsMap[r.studentId]) {
+                    internsMap[r.studentId] = {
+                        id: r.studentId,
+                        name: r.studentName,
+                        program: r.program
+                    };
+                }
+            });
+            setMyInterns(Object.values(internsMap));
 
-    const stats = [
-        { label: 'Active Interns', value: String(myInterns.length), icon: <Users size={24} />, color: 'blue' },
-        { label: 'Pending Reports', value: String(pendingReports.length), icon: <Clock size={24} />, color: 'orange' },
-        { label: 'Total Approved', value: String(approvedReports.length), icon: <FileText size={24} />, color: 'green' },
-        { label: 'Urgent Reviews', value: String(pendingReports.filter(r => (new Date() - new Date(r.date)) > 3 * 24*60*60*1000).length), icon: <AlertCircle size={24} />, color: 'red' },
-    ];
-
-    const openReview = (report) => {
-        setSelectedReport(report);
-        setFeedback(report.feedback || '');
-        setShowReviewModal(true);
+            setStats([
+                { label: 'Active Interns', value: Object.keys(internsMap).length.toString(), icon: <Users size={24} />, color: 'blue' },
+                { label: 'Pending Reports', value: pending.length.toString(), icon: <Clock size={24} />, color: 'orange' },
+                { label: 'Approved Logs', value: reports.filter(r => r.status === 'approved').length.toString(), icon: <FileText size={24} />, color: 'green' },
+                { label: 'Rejected Logs', value: reports.filter(r => r.status === 'rejected' || r.status === 'revision').length.toString(), icon: <AlertCircle size={24} />, color: 'red' },
+            ]);
+        } catch (err) {
+            console.error('Error fetching supervisor data:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleReviewSubmit = (e, status) => {
-        e.preventDefault();
-        const updatedReport = { ...selectedReport, status, feedback };
-        
-        const logs = JSON.parse(localStorage.getItem('ims_logbooks') || '[]');
-        const updatedLogs = logs.map(l => l.id === selectedReport.id ? updatedReport : l);
-        localStorage.setItem('ims_logbooks', JSON.stringify(updatedLogs));
-        
-        setAllReports(updatedLogs.filter(log => log.supervisorId == user?.id).sort((a,b) => b.id - a.id));
-        setShowReviewModal(false);
-        setSelectedReport(null);
-        setFeedback('');
+    useEffect(() => {
+        if (user) fetchData();
+    }, [user]);
+
+    const handleUpdateStatus = async (status) => {
+        try {
+            await apiService.updateLogStatus(selectedReport.id, status, feedback);
+            setSelectedReport(null);
+            setFeedback('');
+            fetchData();
+        } catch (err) {
+            console.error('Error updating log status:', err);
+        }
     };
 
     return (
@@ -84,8 +108,8 @@ const SupervisorDashboard = () => {
                     <div className="reports-list">
                         {pendingReports.length > 0 ? (
                             pendingReports.map((r) => (
-                                <div key={r.id} className="report-item" style={{ background: 'var(--bg-main)', border: '1px solid var(--border)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div className="report-main" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <div key={r.id} className="report-item">
+                                    <div className="report-main">
                                         <div className="avatar" style={{ background: 'var(--primary-light)', color: 'var(--primary)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
                                             {r.studentName?.charAt(0) || 'S'}
                                         </div>
@@ -95,7 +119,10 @@ const SupervisorDashboard = () => {
                                         </div>
                                     </div>
                                     <div className="report-actions">
-                                        <Button variant="outline" size="sm" onClick={() => openReview(r)}>
+                                        <Button variant="outline" size="sm" onClick={() => {
+                                            setSelectedReport(r);
+                                            setFeedback(r.feedback || '');
+                                        }}>
                                             <MessageSquare size={16} /> Review
                                         </Button>
                                     </div>
@@ -127,7 +154,7 @@ const SupervisorDashboard = () => {
                                         <div className="intern-name" style={{ fontWeight: '500', fontSize: '0.9rem', color: 'var(--text-main)' }}>{intern.name}</div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{intern.program}</div>
                                     </div>
-                                    <div className="intern-status" style={{ width: '8px', height: '8px', borderRadius: '50%', background: intern.internshipStarted ? 'var(--success)' : 'var(--warning)' }}></div>
+                                    <div className="intern-status online"></div>
                                 </div>
                             ))
                         ) : (
@@ -140,12 +167,14 @@ const SupervisorDashboard = () => {
             </div>
 
             {/* Review Modal */}
-            {showReviewModal && selectedReport && (
+            {selectedReport && (
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h3>Review Week {selectedReport.week} Report</h3>
-                            <button className="close-btn" onClick={() => setShowReviewModal(false)}>&times;</button>
+                            <button className="close-btn" onClick={() => setSelectedReport(null)}>
+                                <X size={20} />
+                            </button>
                         </div>
                         <div className="modal-body">
                             <div style={{ marginBottom: '1.5rem', background: 'var(--bg-main)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
@@ -153,16 +182,18 @@ const SupervisorDashboard = () => {
                                 <p style={{ fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>{selectedReport.content}</p>
                             </div>
                             
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Skills Acquired</h4>
-                                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                    {selectedReport.skills?.map((skill, i) => (
-                                        <span key={i} style={{ fontSize: '0.8rem', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.6rem', borderRadius: '1rem' }}>
-                                            {skill}
-                                        </span>
-                                    ))}
+                            {selectedReport.skills && selectedReport.skills.length > 0 && (
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Skills Acquired</h4>
+                                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                        {selectedReport.skills.map((skill, i) => (
+                                            <span key={i} style={{ fontSize: '0.8rem', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)', padding: '0.25rem 0.6rem', borderRadius: '1rem' }}>
+                                                {skill}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             <div className="form-group">
                                 <label>Supervisor Feedback</label>
@@ -175,10 +206,10 @@ const SupervisorDashboard = () => {
                             </div>
                         </div>
                         <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <Button variant="outline" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={(e) => handleReviewSubmit(e, 'rejected')}>
+                            <Button variant="outline" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={() => handleUpdateStatus('REJECTED')}>
                                 <XCircle size={16} /> Needs Revision
                             </Button>
-                            <Button style={{ background: 'var(--success)' }} onClick={(e) => handleReviewSubmit(e, 'approved')}>
+                            <Button style={{ background: 'var(--success)' }} onClick={() => handleUpdateStatus('APPROVED')}>
                                 Approve Report <CheckCircle size={16} />
                             </Button>
                         </div>
@@ -188,5 +219,4 @@ const SupervisorDashboard = () => {
         </div>
     );
 };
-
 export default SupervisorDashboard;

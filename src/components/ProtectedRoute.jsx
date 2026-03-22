@@ -18,11 +18,12 @@ const ProtectedRoute = ({ allowedRoles }) => {
         return <Navigate to="/login" replace />;
     }
 
-    if (allowedRoles && !allowedRoles.includes(user.role)) {
+    if (allowedRoles && !allowedRoles.includes(user.role?.toLowerCase())) {
         // Logged in but doesn't have the right role
         // Redirect to their default dashboard based on their actual role
-        const defaultPath = user.role === 'admin' ? '/dashboard/admin' :
-            user.role === 'supervisor' ? '/dashboard/supervisor' :
+        const role = user.role?.toLowerCase();
+        const defaultPath = role === 'admin' ? '/dashboard/admin' :
+            role === 'supervisor' ? '/dashboard/supervisor' :
                 '/dashboard/student';
         return <Navigate to={defaultPath} replace />;
     }

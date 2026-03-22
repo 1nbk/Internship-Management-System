@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Users, UserCheck, Clock, FileCheck, ArrowRight, Shield, Briefcase, TrendingUp, Activity, Bell, FileText, Settings, Flag } from 'lucide-react';
+import { 
+    Users, UserCheck, Clock, FileCheck, 
+    Mail, Shield, Briefcase, TrendingUp, 
+    Activity, ArrowRight, Bell, FileText, Settings, Flag
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { apiService } from '../api/apiService';
 import './Dashboards.css';
 
 const AdminDashboard = () => {
@@ -9,27 +14,38 @@ const AdminDashboard = () => {
     const { user } = useAuth();
     const [letterRequests, setLetterRequests] = useState([]);
     const [usersList, setUsersList] = useState([]);
-    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [lettersData, usersData] = await Promise.all([
+                apiService.getLetterRequests(),
+                apiService.getUsers()
+            ]);
+            setLetterRequests(lettersData);
+            setUsersList(usersData);
+        } catch (err) {
+            console.error('Error fetching admin dashboard data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const savedLetters = JSON.parse(localStorage.getItem('letter_requests') || '[]');
-        const savedUsers = JSON.parse(localStorage.getItem('ims_users') || '[]');
-        const savedPosts = JSON.parse(localStorage.getItem('internship_posts') || '[]');
-        setLetterRequests(savedLetters);
-        setUsersList(savedUsers);
-        setPosts(savedPosts);
+        fetchData();
     }, []);
 
-    const totalStudents = usersList.filter(u => u.role === 'student').length;
-    const activeSupervisors = usersList.filter(u => u.role === 'supervisor' && u.status === 'active').length;
-    const pendingLetters = letterRequests.filter(r => r.status === 'pending').length;
+    const totalStudents = usersList.filter(u => u.role?.toLowerCase() === 'student').length;
+    const activeSupervisors = usersList.filter(u => u.role?.toLowerCase() === 'supervisor' && u.status?.toLowerCase() === 'active').length;
+    const pendingLetters = letterRequests.filter(r => r.status?.toLowerCase() === 'pending').length;
     
     // Placement Rate Calculation
-    const assignedStudents = usersList.filter(u => u.role === 'student' && u.supervisorName).length;
+    const assignedStudents = usersList.filter(u => u.role?.toLowerCase() === 'student' && u.supervisorName).length;
     const placementRate = totalStudents > 0 ? Math.round((assignedStudents / totalStudents) * 100) : 0;
     
     // Alert logic
-    const awaitingSupervisor = usersList.filter(u => u.role === 'student' && u.internshipStarted && !u.supervisorName).length;
+    const awaitingSupervisor = usersList.filter(u => u.role?.toLowerCase() === 'student' && u.internshipStarted && !u.supervisorName).length;
 
     const stats = [
         { label: 'Total Students', value: String(totalStudents), icon: <Users size={24} />, color: 'blue' },
@@ -137,7 +153,7 @@ const AdminDashboard = () => {
                             </button>
                         </div>
                         <div className="table-responsive" style={{ background: 'transparent', border: 'none', padding: 0 }}>
-                            {letterRequests.filter(r => r.status === 'issued').length > 0 ? (
+                            {letterRequests.filter(r => r.status?.toLowerCase() === 'issued').length > 0 ? (
                                 <table className="placement-table" style={{ background: 'var(--bg-main)' }}>
                                     <thead>
                                         <tr>
@@ -147,7 +163,7 @@ const AdminDashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {letterRequests.filter(r => r.status === 'issued').slice(0, 3).map((r) => (
+                                        {letterRequests.filter(r => r.status?.toLowerCase() === 'issued').slice(0, 3).map((r) => (
                                             <tr key={r.id}>
                                                 <td>
                                                     <div className="user-cell">

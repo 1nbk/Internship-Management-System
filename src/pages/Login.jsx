@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Layout, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Layout, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
 import './Auth.css';
@@ -8,29 +9,75 @@ import './Auth.css';
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        login(email, password);
-        navigate('/dashboard');
+        setError('');
+        setIsLoading(true);
+        
+        const result = await login(email, password);
+        
+        setIsLoading(false);
+        if (result.success) {
+            navigate('/dashboard');
+        } else {
+            setError(result.error || 'Login failed. Please check your credentials.');
+        }
+    };
+
+    const containerVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { 
+            opacity: 1, 
+            y: 0,
+            transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, x: -10 },
+        visible: { 
+            opacity: 1, 
+            x: 0,
+            transition: { duration: 0.4 }
+        }
     };
 
     return (
         <div className="auth-page">
-            <div className="auth-card">
+            {/* Background Decoration (already in CSS, but can add motion here too) */}
+            <motion.div 
+                className="auth-card"
+                initial="hidden"
+                animate="visible"
+                variants={containerVariants}
+            >
                 <div className="auth-header">
                     <Link to="/" className="auth-logo">
                         <Layout size={32} />
                         <span>IMS Portal</span>
                     </Link>
-                    <h1>Welcome Back</h1>
-                    <p>Login to your account to continue</p>
+                    <motion.h1 variants={itemVariants}>Welcome Back</motion.h1>
+                    <motion.p variants={itemVariants}>Login to your account to continue</motion.p>
                 </div>
 
+                {error && (
+                    <motion.div 
+                        className="auth-error-message"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                    >
+                        <AlertCircle size={18} />
+                        <span>{error}</span>
+                    </motion.div>
+                )}
+
                 <form onSubmit={handleSubmit} className="auth-form">
-                    <div className="form-group">
+                    <motion.div className="form-group" variants={itemVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
                         <label>Email Address</label>
                         <div className="input-wrapper">
                             <Mail className="input-icon" size={18} />
@@ -40,11 +87,12 @@ const Login = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
+                                disabled={isLoading}
                             />
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="form-group">
+                    <motion.div className="form-group" variants={itemVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
                         <label>Password</label>
                         <div className="input-wrapper">
                             <Lock className="input-icon" size={18} />
@@ -54,26 +102,34 @@ const Login = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
+                                disabled={isLoading}
                             />
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div className="auth-options">
+                    <motion.div className="auth-options" variants={itemVariants} initial="hidden" animate="visible" transition={{ delay: 0.3 }}>
                         <label className="checkbox-label">
-                            <input type="checkbox" /> Remember me
+                            <input type="checkbox" disabled={isLoading} /> Remember me
                         </label>
                         <a href="#" className="forgot-password">Forgot password?</a>
-                    </div>
+                    </motion.div>
 
-                    <Button type="submit" size="lg" className="w-full">
-                        Sign In <ArrowRight size={18} />
-                    </Button>
+                    <motion.div variants={itemVariants} initial="hidden" animate="visible" transition={{ delay: 0.4 }}>
+                        <Button type="submit" size="lg" className="w-full" isLoading={isLoading}>
+                            {isLoading ? 'Signing In...' : 'Sign In'} <ArrowRight size={18} />
+                        </Button>
+                    </motion.div>
                 </form>
 
-                <div className="auth-footer">
+                <motion.div 
+                    className="auth-footer"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                >
                     Don't have an account? <Link to="/signup">Create one</Link>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </div>
     );
 };

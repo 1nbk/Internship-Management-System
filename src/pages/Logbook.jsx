@@ -1,61 +1,70 @@
 import React, { useState, useEffect } from 'react';
-import { Send, Plus, ChevronDown, CheckCircle, XCircle, Clock } from 'lucide-react';
-import Button from '../components/Button';
+import { Send, Plus, CheckCircle, XCircle, Clock, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { apiService } from '../api/apiService';
+import Button from '../components/Button';
 import './Logbook.css';
 
 const Logbook = () => {
     const { user } = useAuth();
     const [activeWeek, setActiveWeek] = useState(1);
-    const [logs, setLogs] = useState([]);
-    
     const [tasks, setTasks] = useState('');
     const [skillsString, setSkillsString] = useState('');
+    const [logs, setLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchLogs = async () => {
+        try {
+            setLoading(true);
+            const data = await apiService.getMyLogs();
+            const normalized = data.map(l => ({
+                ...l,
+                status: (l.status || 'pending').toLowerCase()
+            }));
+            setLogs(normalized);
+            if (normalized.length > 0) {
+                const maxWeek = Math.max(...normalized.map(l => l.week));
+                setActiveWeek(maxWeek + 1);
+            }
+        } catch (err) {
+            console.error('Error fetching logs:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const savedLogs = JSON.parse(localStorage.getItem('ims_logbooks') || '[]');
-        const myLogs = savedLogs.filter(log => log.studentId === user?.id).sort((a,b) => b.week - a.week);
-        setLogs(myLogs);
-        
-        if (myLogs.length > 0) {
-            setActiveWeek(myLogs.reduce((max, log) => log.week > max ? log.week : max, 0) + 1);
-        }
-    }, [user?.id]);
+        if (user) fetchLogs();
+    }, [user]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
-        const allUsers = JSON.parse(localStorage.getItem('ims_users') || '[]');
-        const me = allUsers.find(u => u.id === user?.id);
-        
-        if (!me?.supervisorId) {
-            alert('Cannot submit logbook yet! The Admin has not assigned you a supervisor.');
-            return;
+        // Check for supervisor assignment (from dev2 logic)
+        if (user?.role?.toLowerCase() === 'student' && !user?.supervisorId) {
+            // Re-fetch user or check if supervisor name exists in the context user object
+            // For now, if user object doesn't have it, we show a friendly warning
+            alert('Cannot submit logbook yet! Please ensure your supervisor has been assigned by the Admin.');
+            // Note: Ideally the backend would also enforce this.
         }
 
-        const newLog = {
-            id: Date.now(),
-            studentId: user?.id,
-            studentName: user?.name,
-            supervisorId: parseInt(me.supervisorId),
-            program: me.program || 'N/A',
-            week: activeWeek,
-            content: tasks,
-            skills: skillsString.split(',').map(s => s.trim()).filter(Boolean),
-            status: 'pending',
-            date: new Date().toISOString().split('T')[0],
-            feedback: ''
-        };
-
-        const existingLogs = JSON.parse(localStorage.getItem('ims_logbooks') || '[]');
-        const updatedLogs = [newLog, ...existingLogs];
-        localStorage.setItem('ims_logbooks', JSON.stringify(updatedLogs));
-        
-        const myNewLogs = [newLog, ...logs].sort((a,b) => b.week - a.week);
-        setLogs(myNewLogs);
-        setActiveWeek(myNewLogs.reduce((max, log) => log.week > max ? log.week : max, 0) + 1);
-        setTasks('');
-        setSkillsString('');
+        try {
+            setLoading(true);
+            const skillsArray = skillsString.split(',').map(s => s.trim()).filter(s => s);
+            await apiService.submitLogbook({
+                week: activeWeek,
+                content: tasks,
+                skills: skillsArray
+            });
+            setTasks('');
+            setSkillsString('');
+            await fetchLogs();
+        } catch (err) {
+            console.error('Error submitting logbook:', err);
+            alert(err.message || 'Failed to submit logbook.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -72,63 +81,71 @@ const Logbook = () => {
                         <span className="badge-pending">Drafting</span>
                     </div>
 
-                    <form className="logbook-form" onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} className="logbook-form">
                         <div className="form-group">
                             <label>Tasks Performed</label>
                             <textarea 
-                                required
-                                value={tasks}
-                                onChange={(e) => setTasks(e.target.value)}
                                 placeholder="Describe the tasks you completed this week..." 
                                 rows={6}
+                                value={tasks}
+                                onChange={(e) => setTasks(e.target.value)}
+                                required
+                                disabled={loading}
                             ></textarea>
                         </div>
 
                         <div className="form-group">
-                            <label>Skills Learned / Applied (Comma separated)</label>
+                            <label>Skills Learned / Applied (comma separated)</label>
                             <div className="skills-input-wrapper">
                                 <input 
                                     type="text" 
-                                    required
+                                    placeholder="e.g. React hooks, Project planning..." 
                                     value={skillsString}
                                     onChange={(e) => setSkillsString(e.target.value)}
-                                    placeholder="e.g. React hooks, Data Analysis..." 
+                                    disabled={loading}
                                 />
-                                <Button type="button" variant="secondary" size="sm"><Plus size={16} /></Button>
+                                <Button type="button" variant="secondary" size="sm" onClick={() => {}}><Plus size={16} /></Button>
                             </div>
                         </div>
 
-                        <Button type="submit" size="lg" className="submit-btn" disabled={!tasks || !skillsString}>
+                        <Button type="submit" size="lg" className="submit-btn" isLoading={loading} disabled={loading || !tasks}>
                             Submit Report <Send size={18} />
                         </Button>
                     </form>
                 </div>
 
                 <div className="logbook-history">
-                    <h3>Submission History</h3>
+                    <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h3 style={{ margin: 0 }}>Submission History</h3>
+                        {logs.length > 0 && <span className="text-muted" style={{ fontSize: '0.8rem' }}>{logs.length} Total</span>}
+                    </div>
                     <div className="history-list">
-                        {logs.length > 0 ? (
+                        {loading && logs.length === 0 ? (
+                            <div className="loading-simple">Loading history...</div>
+                        ) : logs.length > 0 ? (
                             logs.map((log) => (
                                 <div key={log.id} className="history-item">
                                     <div className="history-top">
                                         <span className="week-label">Week {log.week}</span>
                                         <span className={`status-badge ${log.status}`}>
-                                            {log.status === 'approved' ? <CheckCircle size={14} /> : log.status === 'rejected' ? <XCircle size={14} /> : <Clock size={14} />}
+                                            {log.status === 'approved' ? <CheckCircle size={14} /> : (log.status === 'rejected' ? <XCircle size={14} /> : <Clock size={14} />)}
                                             {log.status.charAt(0).toUpperCase() + log.status.slice(1)}
                                         </span>
                                     </div>
                                     <p className="log-snippet">{log.content}</p>
+                                    
                                     {log.skills && log.skills.length > 0 && (
-                                        <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                                            {log.skills.map((skill, i) => (
-                                                <span key={i} style={{ fontSize: '0.75rem', background:'rgba(59,130,246,0.1)', color:'var(--primary)', padding:'0.2rem 0.5rem', borderRadius:'4px' }}>{skill}</span>
+                                        <div className="skills-tags" style={{ marginTop: '0.5rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                            {log.skills.map((s, idx) => (
+                                                <span key={idx} className="skill-tag" style={{ fontSize: '0.75rem', background:'rgba(59,130,246,0.1)', color:'var(--primary)', padding:'0.2rem 0.5rem', borderRadius:'4px' }}>{s}</span>
                                             ))}
                                         </div>
                                     )}
+
                                     {log.feedback && (
-                                        <div className="feedback-box">
-                                            <strong>Supervisor Feedback:</strong>
-                                            <p>{log.feedback}</p>
+                                        <div className="feedback-box" style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(245, 158, 11, 0.05)', borderLeft: '3px solid var(--warning)', borderRadius: '4px' }}>
+                                            <strong style={{ fontSize: '0.8rem', color: 'var(--warning-dark)', display: 'block', marginBottom: '0.25rem' }}>Supervisor Feedback:</strong>
+                                            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-main)' }}>{log.feedback}</p>
                                         </div>
                                     )}
                                 </div>

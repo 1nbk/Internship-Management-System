@@ -1,16 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, PieChart, TrendingUp, Download, Calendar, Users, Building2, GraduationCap, Printer } from 'lucide-react';
+import { TrendingUp, BarChart3, Printer, Download } from 'lucide-react';
+import { apiService } from '../api/apiService';
 import './Dashboards.css';
 
 const Reports = () => {
     const [users, setUsers] = useState([]);
     const [letters, setLetters] = useState([]);
     const [placements, setPlacements] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [usersData, lettersData, logsData] = await Promise.all([
+                apiService.getUsers(),
+                apiService.getLetterRequests(),
+                apiService.getInternsLogs() // Admin can also fetch all logbooks probably, but using interns-logs for now or get all users
+            ]);
+            setUsers(usersData);
+            setLetters(lettersData);
+            
+            // Derive placements from students with status ACTIVE/APPROVED
+            const studentPlacements = usersData.filter(u => u.role === 'STUDENT' && u.internshipStarted).map(s => ({
+                ...s,
+                status: s.status.toLowerCase(),
+                department: s.department || 'Other'
+            }));
+            setPlacements(studentPlacements);
+        } catch (err) {
+            console.error('Error fetching report data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        setUsers(JSON.parse(localStorage.getItem('ims_users') || '[]'));
-        setLetters(JSON.parse(localStorage.getItem('letter_requests') || '[]'));
-        setPlacements(JSON.parse(localStorage.getItem('ims_placements') || '[]'));
+        fetchData();
     }, []);
 
     const activePlacements = placements.filter(p => p.status === 'active').length;
