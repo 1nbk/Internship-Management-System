@@ -11,15 +11,25 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const checkAuth = async () => {
-            const savedUser = localStorage.getItem('ims_user');
-            const token = authService.getToken();
-            
-            if (savedUser && token) {
-                setUser(JSON.parse(savedUser));
-            } else {
-                authService.logout();
+            try {
+                const savedUser = localStorage.getItem('ims_user');
+                const token = authService.getToken();
+                
+                if (savedUser && token) {
+                    try {
+                        setUser(JSON.parse(savedUser));
+                    } catch (parseError) {
+                        console.error('Failed to parse saved user:', parseError);
+                        authService.logout();
+                    }
+                } else {
+                    authService.logout();
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
         checkAuth();
     }, []);
@@ -57,7 +67,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };
