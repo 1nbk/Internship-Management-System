@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Layout, Mail, Lock, User, Briefcase, GraduationCap, ShieldCheck, BookOpen, Building2, ArrowRight, AlertCircle } from 'lucide-react';
+import { Layout, Mail, Lock, User, Briefcase, GraduationCap, ShieldCheck, BookOpen, Building2, ArrowRight, AlertCircle, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -22,8 +22,23 @@ const Signup = () => {
     const toast = useToast();
     const navigate = useNavigate();
 
+    // Password validation rules
+    const passwordChecks = useMemo(() => ({
+        minLength: password.length >= 6,
+        hasNumber: /\d/.test(password),
+        hasSymbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password),
+    }), [password]);
+
+    const isPasswordValid = passwordChecks.minLength && passwordChecks.hasNumber && passwordChecks.hasSymbol;
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!isPasswordValid) {
+            toast.error('Password must be at least 6 characters with a number and a symbol.');
+            return;
+        }
+
         setIsLoading(true);
 
         const userData = { 
@@ -124,7 +139,7 @@ const Signup = () => {
                             <User className="input-icon" size={18} />
                             <input
                                 type="text"
-                                placeholder="John Doe"
+                                placeholder="Enter your full name"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 required
@@ -154,13 +169,29 @@ const Signup = () => {
                             <Lock className="input-icon" size={18} />
                             <input
                                 type="password"
-                                placeholder="••••••••"
+                                placeholder="Min. 6 chars, a number & a symbol"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 disabled={isLoading}
                             />
                         </div>
+                        {password.length > 0 && (
+                            <div className="password-requirements">
+                                <div className={`req-item ${passwordChecks.minLength ? 'met' : ''}`}>
+                                    {passwordChecks.minLength ? <Check size={14} /> : <AlertCircle size={14} />}
+                                    <span>At least 6 characters</span>
+                                </div>
+                                <div className={`req-item ${passwordChecks.hasNumber ? 'met' : ''}`}>
+                                    {passwordChecks.hasNumber ? <Check size={14} /> : <AlertCircle size={14} />}
+                                    <span>At least one number</span>
+                                </div>
+                                <div className={`req-item ${passwordChecks.hasSymbol ? 'met' : ''}`}>
+                                    {passwordChecks.hasSymbol ? <Check size={14} /> : <AlertCircle size={14} />}
+                                    <span>At least one symbol (!@#$...)</span>
+                                </div>
+                            </div>
+                        )}
                     </motion.div>
 
                     {role === 'student' && (

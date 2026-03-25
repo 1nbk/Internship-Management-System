@@ -6,6 +6,12 @@ const signup = async (req, res) => {
     try {
         const { email, password, name, role, department, institution, program, studentId, year } = req.body;
 
+        // Validate password complexity
+        const isPasswordValid = password.length >= 6 && /\d/.test(password) && /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password);
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters and include a number and a symbol' });
+        }
+
         // Check if user exists
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {

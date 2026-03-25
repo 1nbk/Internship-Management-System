@@ -247,7 +247,7 @@ const UsersManagement = () => {
                                         required
                                         value={newUser.name}
                                         onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                                        placeholder="e.g. John Doe"
+                                        placeholder="Enter full name"
                                     />
                                 </div>
                                 <div className="form-group">

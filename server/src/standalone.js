@@ -15,7 +15,19 @@ const APPS_FILE = path.join(DB_PATH, 'applications.json');
 const readDB = (file) => JSON.parse(fs.readFileSync(file, 'utf8') || '[]');
 const saveDB = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
-const hashPassword = (password) => crypto.createHash('sha256').update(password).digest('hex');
+// --- SECURITY & VALIDATION ---
+const validatePassword = (password) => {
+    const minLength = password.length >= 6;
+    const hasNumber = /\d/.test(password);
+    const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password);
+    return minLength && hasNumber && hasSymbol;
+};
+
+// Use PBKDF2 for more secure hashing (better than plain SHA256)
+const hashPassword = (password) => {
+    const salt = 'ims_secure_salt_2026'; // In a real app, use a unique salt per user
+    return crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+};
 
 const generateToken = (user) => {
     const payload = JSON.stringify({ id: user.id, role: user.role, exp: Date.now() + 86400000 });
@@ -65,6 +77,12 @@ const server = http.createServer(async (req, res) => {
         // --- AUTH ---
         if (url === '/api/auth/signup' && method === 'POST') {
             const body = await getRequestBody(req);
+            
+            // Validate password complexity
+            if (!validatePassword(body.password)) {
+                return sendJSON(res, { message: 'Password does not meet security requirements (min 6 chars, 1 number, 1 symbol)' }, 400);
+            }
+
             const users = readDB(USERS_FILE);
             if (users.find(u => u.email === body.email)) return sendJSON(res, { message: 'User exists' }, 400);
             
@@ -150,18 +168,18 @@ const server = http.createServer(async (req, res) => {
 });
 
 // Seed Initial Admin if no users exist
-const users = readDB(USERS_FILE);
-if (users.length === 0) {
-    users.push({
+const usersPreSeed = readDB(USERS_FILE);
+if (usersPreSeed.length === 0) {
+    usersPreSeed.push({
         id: 1,
         email: 'admin@ims.com',
-        password: hashPassword('admin123'),
+        password: hashPassword('Admin@123'), // Updated seed to meet new requirements
         name: 'System Admin',
         role: 'ADMIN',
         status: 'ACTIVE'
     });
-    saveDB(USERS_FILE, users);
-    console.log('🌱 Seeded Admin: admin@ims.com / admin123');
+    saveDB(USERS_FILE, usersPreSeed);
+    console.log('🌱 Seeded Admin: admin@ims.com / Admin@123');
 }
 
 const PORT = 5000;
