@@ -121,5 +121,12 @@ export const apiService = {
             body: JSON.stringify(profileData),
         });
         return handleResponse(response);
+    },
+
+    // Notifications
+    async getNotifications() {
+        const response = await fetch(`${API_BASE_URL}/notifications`, { headers: getHeaders() });
+        return handleResponse(response);
     }
 };
+
