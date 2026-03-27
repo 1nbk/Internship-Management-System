@@ -75,8 +75,44 @@ const updateUserStatus = async (req, res) => {
     }
 };
 
+const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const updates = req.body;
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: updates,
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                role: true,
+                status: true,
+                department: true,
+                institution: true,
+                program: true,
+                studentId: true,
+                year: true,
+                supervisorId: true,
+                internshipStarted: true,
+                createdAt: true
+            }
+        });
+
+        res.json({
+            message: 'Profile updated successfully',
+            user: updatedUser
+        });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ message: 'Internal server error updating profile' });
+    }
+};
+
 module.exports = {
     getAllUsers,
     assignSupervisor,
-    updateUserStatus
+    updateUserStatus,
+    updateProfile
 };

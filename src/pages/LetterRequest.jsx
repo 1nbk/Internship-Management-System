@@ -1,6 +1,9 @@
+import React, { useState } from 'react';
+import { CheckCircle2, Building2, MapPin, Mail, FileText, Calendar, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { apiService } from '../api/apiService';
+import Button from '../components/Button';
 import './Dashboards.css';
 
 const LetterRequest = () => {

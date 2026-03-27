@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FileText, User, Building2, Calendar, Mail, CheckCircle2, MoreVertical, Search, ExternalLink, X, Send } from 'lucide-react';
 import Button from '../components/Button';
+import { apiService } from '../api/apiService';
 import './Dashboards.css';
 
 const AdminLetterRequests = () => {
@@ -9,20 +10,48 @@ const AdminLetterRequests = () => {
     const [requests, setRequests] = useState([]);
     const [toast, setToast] = useState(null);
 
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchRequests = async () => {
+        try {
+            setLoading(true);
+            const data = await apiService.getLetterRequests();
+            // Normalize status to lowercase for consistency with UI styles
+            const normalized = data.map(r => ({
+                ...r,
+                status: r.status?.toLowerCase() || 'pending',
+                date: r.dateSubmitted ? new Date(r.dateSubmitted).toLocaleDateString() : '—',
+                studentName: r.student?.name || 'Unknown'
+            }));
+            setRequests(normalized);
+        } catch (err) {
+            console.error('Error fetching letter requests:', err);
+            setError('Failed to load requests.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     React.useEffect(() => {
-        const saved = JSON.parse(localStorage.getItem('letter_requests') || '[]');
-        setRequests(saved);
+        fetchRequests();
     }, []);
 
-    const handleApprove = (req) => {
-        const updated = requests.map(r =>
-            r.id === req.id ? { ...r, status: 'issued' } : r
-        );
-        setRequests(updated);
-        localStorage.setItem('letter_requests', JSON.stringify(updated));
-        setSelectedRequest(null);
-        setToast(`Letter approved! A confirmation has been sent to ${req.email || 'the student\'s email'}.`);
-        setTimeout(() => setToast(null), 4000);
+    const handleApprove = async (req) => {
+        try {
+            // Backend expects uppercase status based on Prisma Enum
+            await apiService.updateLetterStatus(req.id, 'ISSUED');
+            
+            // Re-fetch to get updated list
+            fetchRequests();
+            
+            setSelectedRequest(null);
+            setToast(`Letter approved! A confirmation has been sent to ${req.email || 'the student\'s email'}.`);
+            setTimeout(() => setToast(null), 4000);
+        } catch (err) {
+            console.error('Error approving letter:', err);
+            setToast('Failed to approve letter.');
+        }
     };
 
     const getStatusStyle = (status) => {

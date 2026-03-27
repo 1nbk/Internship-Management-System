@@ -85,6 +85,46 @@ export const apiService = {
         return handleResponse(response);
     },
 
+    async applyToOpportunity(opportunityId) {
+        const response = await fetch(`${API_BASE_URL}/opportunities/apply`, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify({ opportunityId }),
+        });
+        return handleResponse(response);
+    },
+
+    async getAllApplications() {
+        const response = await fetch(`${API_BASE_URL}/opportunities/applications`, { headers: getHeaders() });
+        return handleResponse(response);
+    },
+
+    async updateApplicationStatus(applicationId, status) {
+        const response = await fetch(`${API_BASE_URL}/opportunities/applications/${applicationId}`, {
+            method: 'PATCH',
+            headers: getHeaders(),
+            body: JSON.stringify({ status }),
+        });
+        return handleResponse(response);
+    },
+
+    async updateOpportunity(opportunityId, data) {
+        const response = await fetch(`${API_BASE_URL}/opportunities/${opportunityId}`, {
+            method: 'PATCH',
+            headers: getHeaders(),
+            body: JSON.stringify(data),
+        });
+        return handleResponse(response);
+    },
+
+    async deleteOpportunity(opportunityId) {
+        const response = await fetch(`${API_BASE_URL}/opportunities/${opportunityId}`, {
+            method: 'DELETE',
+            headers: getHeaders(),
+        });
+        return handleResponse(response);
+    },
+
     // Logbooks
     async submitLogbook(data) {
         const response = await fetch(`${API_BASE_URL}/logbooks`, {

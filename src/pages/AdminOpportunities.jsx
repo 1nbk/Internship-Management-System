@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Search, Plus, Building2, MapPin, Edit, Trash2, CheckCircle2, X } from 'lucide-react';
 import Button from '../components/Button';
+import { apiService } from '../api/apiService';
 import './Dashboards.css';
 
 const AdminOpportunities = () => {
@@ -16,22 +17,37 @@ const AdminOpportunities = () => {
         id: null, title: '', company: '', location: '', type: 'Software Engineering', duration: '', status: 'Open', description: ''
     });
 
-    useEffect(() => {
-        const savedOpps = JSON.parse(localStorage.getItem('ims_opportunities'));
-        if (savedOpps) {
-            setOpportunities(savedOpps);
-        } else {
-            // Seed some initial data if empty
-            const initial = [
-                { id: 1, title: 'Frontend Developer Intern', company: 'TechNova Solutions', location: 'Remote', type: 'Software Engineering', duration: '6 Months', status: 'Open', description: 'Work on React apps.' },
-                { id: 2, title: 'UI/UX Design Intern', company: 'CreativePulse Agency', location: 'Abuja', type: 'Design', duration: '3 Months', status: 'Open', description: 'Figma skills required.' }
-            ];
-            setOpportunities(initial);
-            localStorage.setItem('ims_opportunities', JSON.stringify(initial));
-        }
+    const [loading, setLoading] = useState(true);
 
-        const savedApps = JSON.parse(localStorage.getItem('ims_applications') || '[]');
-        setApplications(savedApps);
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [oppsData, appsData] = await Promise.all([
+                apiService.getOpportunities(),
+                apiService.getAllApplications()
+            ]);
+            
+            setOpportunities(oppsData);
+            
+            // Normalize applications
+            const normalizedApps = appsData.map(app => ({
+                ...app,
+                opportunityTitle: app.opportunity?.title,
+                studentName: app.student?.name,
+                studentEmail: app.student?.email,
+                company: app.opportunity?.company,
+                dateApplied: app.dateSubmitted ? new Date(app.dateSubmitted).toLocaleDateString() : '—'
+            }));
+            setApplications(normalizedApps);
+        } catch (err) {
+            console.error('Error fetching opportunities data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
     }, []);
 
     const showNotification = (msg) => {
@@ -40,27 +56,34 @@ const AdminOpportunities = () => {
     };
 
     // --- Postings Management ---
-    const handleSavePosting = (e) => {
+    const handleSavePosting = async (e) => {
         e.preventDefault();
-        let updated;
-        if (formData.id) {
-            updated = opportunities.map(o => o.id === formData.id ? { ...formData } : o);
-            showNotification('Internship posting updated successfully.');
-        } else {
-            updated = [...opportunities, { ...formData, id: Date.now() }];
-            showNotification('New internship posted successfully.');
+        try {
+            if (formData.id) {
+                await apiService.updateOpportunity(formData.id, formData);
+                showNotification('Internship posting updated successfully.');
+            } else {
+                await apiService.createOpportunity(formData);
+                showNotification('New internship posted successfully.');
+            }
+            fetchData();
+            setShowModal(false);
+        } catch (err) {
+            console.error('Error saving opportunity:', err);
+            showNotification('Failed to save opportunity.');
         }
-        setOpportunities(updated);
-        localStorage.setItem('ims_opportunities', JSON.stringify(updated));
-        setShowModal(false);
     };
 
-    const handleDeletePosting = (id) => {
+    const handleDeletePosting = async (id) => {
         if(window.confirm('Are you sure you want to delete this posting?')) {
-            const updated = opportunities.filter(o => o.id !== id);
-            setOpportunities(updated);
-            localStorage.setItem('ims_opportunities', JSON.stringify(updated));
-            showNotification('Posting deleted.');
+            try {
+                await apiService.deleteOpportunity(id);
+                fetchData();
+                showNotification('Posting deleted.');
+            } catch (err) {
+                console.error('Error deleting opportunity:', err);
+                showNotification('Failed to delete posting.');
+            }
         }
     };
 
@@ -75,41 +98,41 @@ const AdminOpportunities = () => {
     };
 
     // --- Applications Management ---
-    const handleApproveApplication = (app) => {
-        // Mark application as approved
-        const updatedApps = applications.map(a => 
-            a.id === app.id ? { ...a, status: 'approved' } : a
-        );
-        setApplications(updatedApps);
-        localStorage.setItem('ims_applications', JSON.stringify(updatedApps));
+    const handleApproveApplication = async (app) => {
+        try {
+            // Mark application as approved in backend
+            await apiService.updateApplicationStatus(app.id, 'APPROVED');
 
-        // Auto-generate an internship letter for this student
-        const savedLetters = JSON.parse(localStorage.getItem('letter_requests') || '[]');
-        const newLetter = {
-            id: Date.now(),
-            studentId: app.studentId,
-            studentName: app.studentName,
-            email: app.studentEmail || '',
-            company: app.company,
-            reason: `Accepted for ${app.opportunityTitle} role`,
-            dateSubmitted: new Date().toLocaleDateString(),
-            startDate: 'TBD',
-            notes: 'Auto-generated upon internship application approval.',
-            status: 'issued'
-        };
-        localStorage.setItem('letter_requests', JSON.stringify([...savedLetters, newLetter]));
+            // Auto-generate an internship letter for this student on the backend
+            // Since we don't have a direct "auto-generate" endpoint, we can use createLetterRequest
+            // but we need to match the backend expectation.
+            await apiService.createLetterRequest({
+                studentId: app.studentId,
+                company: app.company,
+                companyAddress: 'Internal Placement', // Placeholder
+                startDate: 'TBD',
+                endDate: 'TBD',
+                reason: `Accepted for ${app.opportunityTitle} role`,
+            });
 
-        showNotification(`${app.studentName}'s application approved. Internship Letter issued automatically.`);
+            fetchData();
+            showNotification(`${app.studentName}'s application approved. Internship Letter issued automatically.`);
+        } catch (err) {
+            console.error('Error approving application:', err);
+            showNotification('Failed to approve application.');
+        }
     };
 
-    const handleRejectApplication = (id) => {
+    const handleRejectApplication = async (id) => {
         if(window.confirm('Reject this application?')) {
-            const updatedApps = applications.map(a => 
-                a.id === id ? { ...a, status: 'rejected' } : a
-            );
-            setApplications(updatedApps);
-            localStorage.setItem('ims_applications', JSON.stringify(updatedApps));
-            showNotification('Application rejected.');
+            try {
+                await apiService.updateApplicationStatus(id, 'REJECTED');
+                fetchData();
+                showNotification('Application rejected.');
+            } catch (err) {
+                console.error('Error rejecting application:', err);
+                showNotification('Failed to reject application.');
+            }
         }
     };
 

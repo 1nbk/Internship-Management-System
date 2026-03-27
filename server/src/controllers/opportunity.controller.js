@@ -84,10 +84,40 @@ const updateApplicationStatus = async (req, res) => {
     }
 };
 
+const updateOpportunity = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+        const updated = await prisma.internshipOpportunity.update({
+            where: { id: parseInt(id) },
+            data: updates
+        });
+        res.json(updated);
+    } catch (error) {
+        console.error('Error updating opportunity:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+const deleteOpportunity = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.internshipOpportunity.delete({
+            where: { id: parseInt(id) }
+        });
+        res.json({ message: 'Opportunity deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting opportunity:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
 module.exports = {
     createOpportunity,
     getOpportunities,
     applyToOpportunity,
     getAllApplications,
-    updateApplicationStatus
+    updateApplicationStatus,
+    updateOpportunity,
+    deleteOpportunity
 };

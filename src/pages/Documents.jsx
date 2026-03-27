@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Download, Upload, FileText, CheckCircle, AlertCircle, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/Button';
+import { apiService } from '../api/apiService';
 import './Documents.css';
 
 const Documents = () => {
@@ -16,9 +17,13 @@ const Documents = () => {
     const [uploads, setUploads] = useState([]);
 
     useEffect(() => {
-        const savedRequests = JSON.parse(localStorage.getItem('letter_requests') || '[]');
-        const myIssued = savedRequests.filter(r => r.studentId === user?.id && r.status === 'issued');
-        setIssuedLetters(myIssued);
+        if (user?.id) {
+            apiService.getMyLetterRequests().then(requests => {
+                // Filter and normalize status
+                const myIssued = requests.filter(r => r.status?.toLowerCase() === 'issued');
+                setIssuedLetters(myIssued);
+            }).catch(console.error);
+        }
     }, [user?.id]);
 
     return (

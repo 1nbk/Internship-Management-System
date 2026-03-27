@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, CheckCircle2, TrendingUp, Clock, Send, FileText, BookOpen, ArrowRight, Award, Briefcase, FolderOpen, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { apiService } from '../api/apiService';
 import './Dashboards.css';
 
 const StudentDashboard = () => {
@@ -10,24 +11,49 @@ const StudentDashboard = () => {
     const [letterRequests, setLetterRequests] = useState([]);
     const [hasStarted, setHasStarted] = useState(false);
 
-    useEffect(() => {
-        const saved = JSON.parse(localStorage.getItem('letter_requests') || '[]');
-        const myRequests = saved.filter(r => r.studentId === user?.id);
-        setLetterRequests(myRequests);
+    const [loading, setLoading] = useState(true);
 
-        const allUsers = JSON.parse(localStorage.getItem('ims_users') || '[]');
-        const me = allUsers.find(u => u.id === user?.id);
-        setHasStarted(me?.internshipStarted || false);
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [lettersData, logsData] = await Promise.all([
+                apiService.getMyLetterRequests(),
+                apiService.getMyLogs()
+            ]);
+            
+            // Normalize statuses to lowercase for UI consistency
+            const normalizedLetters = lettersData.map(r => ({
+                ...r,
+                status: r.status?.toLowerCase(),
+                dateSubmitted: r.dateSubmitted ? new Date(r.dateSubmitted).toLocaleDateString() : ''
+            }));
+            
+            setLetterRequests(normalizedLetters);
+            setHasStarted(user?.internshipStarted || false);
+        } catch (err) {
+            console.error('Error fetching student dashboard data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchData();
+        }
     }, [user?.id]);
 
-    const handleStartInternship = () => {
-        const allUsers = JSON.parse(localStorage.getItem('ims_users') || '[]');
-        const updatedUsers = allUsers.map(u => u.id === user?.id ? { ...u, internshipStarted: true } : u);
-        localStorage.setItem('ims_users', JSON.stringify(updatedUsers));
-        
-        const updatedUser = { ...user, internshipStarted: true };
-        localStorage.setItem('ims_user', JSON.stringify(updatedUser)); // Auth context relies on this
-        setHasStarted(true);
+    const handleStartInternship = async () => {
+        try {
+            await apiService.updateProfile({ internshipStarted: true });
+            
+            // Update local user state if necessary, or just rely on re-fetch/context
+            const updatedUser = { ...user, internshipStarted: true };
+            localStorage.setItem('ims_user', JSON.stringify(updatedUser)); // Auth context relies on this
+            setHasStarted(true);
+        } catch (err) {
+            console.error('Error starting internship:', err);
+        }
     };
 
     const activeInternship = letterRequests.sort((a,b) => b.id - a.id).find(r => r.status === 'issued' || r.status === 'approved') || letterRequests[0];
@@ -64,9 +90,16 @@ const StudentDashboard = () => {
         }
     }
 
-    const allLogs = JSON.parse(localStorage.getItem('ims_logbooks') || '[]');
-    const myLogs = allLogs.filter(log => log.studentId === user?.id);
-    const approvedReports = myLogs.filter(log => log.status === 'approved').length;
+    // Fetch my logs from API instead of localStorage
+    const [myLogs, setMyLogs] = useState([]);
+    
+    useEffect(() => {
+        if (user?.id) {
+            apiService.getMyLogs().then(setMyLogs).catch(console.error);
+        }
+    }, [user?.id]);
+
+    const approvedReports = myLogs.filter(log => log.status?.toLowerCase() === 'approved').length;
 
     const stats = [
         { label: 'Weeks Completed', value: `${weeksCompleted}/${totalWeeks}`, icon: <Calendar size={24} />, color: 'blue' },
