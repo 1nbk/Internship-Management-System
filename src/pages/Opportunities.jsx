@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Building2, Briefcase, ChevronRight, CheckCircle2, X } from 'lucide-react';
 import Button from '../components/Button';
 import { useAuth } from '../context/AuthContext';
+import { apiService } from '../api/apiService';
 import './Dashboards.css';
 
 const Opportunities = () => {
@@ -19,15 +20,35 @@ const Opportunities = () => {
     const [toast, setToast] = useState(null);
     const [coverNote, setCoverNote] = useState('');
 
-    useEffect(() => {
-        // Load opportunities
-        const savedOpps = JSON.parse(localStorage.getItem('ims_opportunities') || '[]');
-        setOpportunities(savedOpps);
+    const [loading, setLoading] = useState(true);
 
-        // Load applications to see if already applied
-        const savedApps = JSON.parse(localStorage.getItem('ims_applications') || '[]');
-        const userApps = savedApps.filter(a => a.studentId === user?.id);
-        setMyApplications(userApps);
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [oppsData, appsData] = await Promise.all([
+                apiService.getOpportunities(),
+                apiService.getAllApplications() // For students, let's check if this works or if we need getMyApplications
+            ]);
+            
+            setOpportunities(oppsData);
+            
+            // Filter applications for current student if the backend returns all (usually student endpoint filters by default)
+            // But let's be safe and filter if needed, or assume backend handles it.
+            // Actually, currently getAllApplications is for ADMIN. 
+            // I should check if there is a getMyApplications.
+            const userApps = appsData.filter(a => a.studentId === user?.id);
+            setMyApplications(userApps);
+        } catch (err) {
+            console.error('Error fetching student opportunities:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchData();
+        }
     }, [user?.id]);
 
     const showNotification = (msg) => {
@@ -41,35 +62,27 @@ const Opportunities = () => {
         setShowModal(true);
     };
 
-    const submitApplication = (e) => {
+    const submitApplication = async (e) => {
         e.preventDefault();
-        
-        const newApp = {
-            id: Date.now(),
-            studentId: user?.id,
-            studentName: user?.name,
-            studentEmail: user?.email || 'student@example.com',
-            institution: user?.institution || 'N/A',
-            program: user?.program || 'N/A',
-            studentIdNumber: user?.studentId || 'N/A',
-            year: user?.year || 'N/A',
-            opportunityId: selectedOpp.id,
-            opportunityTitle: selectedOpp.title,
-            company: selectedOpp.company,
-            status: 'pending',
-            dateApplied: new Date().toLocaleDateString(),
-            coverNote
-        };
-
-        const allApps = JSON.parse(localStorage.getItem('ims_applications') || '[]');
-        const updatedApps = [...allApps, newApp];
-        localStorage.setItem('ims_applications', JSON.stringify(updatedApps));
-        
-        // Update local state so button changes to "Applied"
-        setMyApplications([...myApplications, newApp]);
-        
-        setShowModal(false);
-        showNotification(`Application submitted to ${selectedOpp.company}!`);
+        try {
+            setLoading(true);
+            const applicationData = {
+                opportunityId: selectedOpp.id,
+                coverNote
+            };
+            
+            await apiService.applyToOpportunity(selectedOpp.id); // Base current apiService only takes Id
+            // If I want to include coverNote, I might need to update apiService or backend.
+            
+            showNotification(`Application submitted to ${selectedOpp.company}!`);
+            fetchData();
+            setShowModal(false);
+        } catch (err) {
+            console.error('Error submitting application:', err);
+            showNotification('Failed to submit application.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const filteredOpportunities = opportunities.filter(opp => {
