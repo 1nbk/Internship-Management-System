@@ -110,7 +110,13 @@ const DashboardLayout = () => {
 
                 <div className="sidebar-footer">
                     <div className="sidebar-user-mini">
-                        <div className="sidebar-avatar">{user?.name?.charAt(0) || 'U'}</div>
+                        <div className="sidebar-avatar" style={{ 
+                            background: user?.avatar ? `url(${user.avatar})` : 'linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                        }}>
+                            {!user?.avatar && (user?.name?.charAt(0) || 'U')}
+                        </div>
                         <div className="sidebar-user-text">
                             <span className="sidebar-user-name">{user?.name || 'User'}</span>
                             <span className="sidebar-user-role">{user?.role}</span>
@@ -176,7 +182,13 @@ const DashboardLayout = () => {
                             )}
                         </div>
                         <div className="user-profile">
-                            <div className="avatar">{user?.name?.charAt(0) || 'U'}</div>
+                            <div className="avatar" style={{ 
+                                background: user?.avatar ? `url(${user.avatar})` : 'linear-gradient(135deg, var(--primary) 0%, var(--purple) 100%)',
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center'
+                            }}>
+                                {!user?.avatar && (user?.name?.charAt(0) || 'U')}
+                            </div>
                             <div className="user-info">
                                 <span className="user-name">{user?.name || 'User'}</span>
                                 <span className="user-role">{user?.role}</span>

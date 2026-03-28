@@ -38,6 +38,12 @@ model User {
   program           String?
   studentId         String?
   year              String?
+  phone             String?
+  bio               String?
+  skills            String[]
+  linkedin          String?
+  github            String?
+  avatar            String?
   supervisorId      Int?
   internshipStarted Boolean   @default(false)
   createdAt         DateTime  @default(now())

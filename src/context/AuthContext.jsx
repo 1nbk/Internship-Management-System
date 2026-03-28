@@ -65,8 +65,14 @@ export const AuthProvider = ({ children }) => {
         authService.logout();
     };
 
+    const updateUser = (updatedData) => {
+        const newUser = { ...user, ...updatedData };
+        setUser(newUser);
+        localStorage.setItem('ims_user', JSON.stringify(newUser));
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, signup, logout, updateUser, loading }}>
             {children}
         </AuthContext.Provider>
     );
