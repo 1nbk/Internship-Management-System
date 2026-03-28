@@ -12,7 +12,8 @@ const StudentDashboard = () => {
     const [hasStarted, setHasStarted] = useState(false);
 
     const [loading, setLoading] = useState(true);
-
+    const [myLogs, setMyLogs] = useState([]);
+    
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -40,6 +41,7 @@ const StudentDashboard = () => {
     useEffect(() => {
         if (user?.id) {
             fetchData();
+            apiService.getMyLogs().then(setMyLogs).catch(console.error);
         }
     }, [user?.id]);
 
@@ -90,15 +92,6 @@ const StudentDashboard = () => {
         }
     }
 
-    // Fetch my logs from API instead of localStorage
-    const [myLogs, setMyLogs] = useState([]);
-    
-    useEffect(() => {
-        if (user?.id) {
-            apiService.getMyLogs().then(setMyLogs).catch(console.error);
-        }
-    }, [user?.id]);
-
     const approvedReports = myLogs.filter(log => log.status?.toLowerCase() === 'approved').length;
 
     const stats = [
@@ -115,6 +108,8 @@ const StudentDashboard = () => {
         { label: 'Documents', desc: 'Manage your files', icon: <FolderOpen size={22} />, path: '/dashboard/documents', accent: '#f59e0b' },
     ];
 
+    const issuedLetter = letterRequests.find(r => r.status === 'issued');
+
     return (
         <div className="dashboard-view fade-in">
             {/* Welcome Banner */}
@@ -129,7 +124,7 @@ const StudentDashboard = () => {
             </div>
 
             {/* Issued Letters Banner */}
-            {letterRequests.some(r => r.status === 'issued') && (
+            {issuedLetter && (
                 <div className="alert-success fade-in" style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 1.5rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)', borderRadius: 'var(--radius-lg)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <div style={{ background: 'var(--success)', color: '#fff', padding: '0.6rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -137,7 +132,7 @@ const StudentDashboard = () => {
                         </div>
                         <div>
                             <h4 style={{ color: 'var(--success)', marginBottom: '0.3rem', fontSize: '1.05rem' }}>Your Internship Letter is Ready!</h4>
-                            <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', margin: 0 }}>The admin has approved your request for <strong>{letterRequests.find(r => r.status === 'issued').company}</strong>.</p>
+                            <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', margin: 0 }}>The admin has approved your request for <strong>{issuedLetter.company}</strong>.</p>
                         </div>
                     </div>
                     {hasStarted ? (
